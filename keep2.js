@@ -40,8 +40,6 @@ const connection = mysql.createConnection({
   const projectId = config.project_id
 	// A unique identifier for the given session
 	const sessionId = uuid.v4();
-	
-	// Create a new session
 	const sessionClient = new dialogflow.SessionsClient({
         keyFilename:"C:/Work/GreenPlus/newagent-af9v-8f04ca7d93ba.json"
     });
