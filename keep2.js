@@ -10,15 +10,9 @@ const {Card, Suggestion} = require('dialogflow-fulfillment');
 const { IntentsClient } = require('@google-cloud/dialogflow/build/src/v2');
 const app = express()  
 const port = process.env.PORT || 3000
-const agent = new WebhookClient({ request, response});
-let intentMap = new Map();
-intentMap.set('getDataFromMySQL', handleReadFromMySQL);
-intentMap.set('writeDataIntoMysql', handleWriteIntoMysql);
-intentMap.set('updateMysql', handleUpdateMysql);
-intentMap.set('deleteFromMysql', handleDeleteFromMysql);
-agent.handleRequest(intentMap);
+
+
 var temp_prod = '';	
-let intentmap = new Map();
 	  app.use(express.json())
 	  app.use(express.urlencoded({ extended: true }))
 	  
