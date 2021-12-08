@@ -110,7 +110,7 @@ app.post('/chatbot', async (req, res) => {
 })
 
 
-/*async function runSample(projectId = 'jamemo-pp9o') {
+async function runSample(projectId = 'jamemo-pp9o') {
 	// A unique identifier for the given session
 	const sessionId = uuid.v4();
 	
@@ -145,6 +145,6 @@ app.post('/chatbot', async (req, res) => {
 	  }
 	}	
 
-*/
+
 
 

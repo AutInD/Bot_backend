@@ -32,3 +32,49 @@ app.get('/', async(req, res) => {
 	  );
 	  return temp_prod;
   })
+
+  function WriteOrder(agent){
+	let date = new DateTime();
+	const data = {
+	  Order_CountProduct: 6,
+	  Order_TotalCost: 1350,
+	  Order_Date: date,
+	  Order_Status: "No",
+	  Order_CusName: "อรรถพล ตันติวัฒนะผล",
+	  Order_CusTel: "0827754150",
+	  Order_CusAdd: "ง.78/113 ถ.ดาวดึงส์ ต.ปากน้ำโพ อ.เมือง จ.นครสวรรค์ 60000",
+	  Order_DeliveryType: "ปลายทาง",
+	  Order_Tracking: "No",
+	};
+	return connectToDatabase()
+	.then(connection => {
+	  return insertIntoDatabase(connection, data)
+	  .then(result => {
+	 agent.add(`Data inserted`);       
+		connection.end();
+	  });
+	});
+  }
+
+  function WriteOrder(agent){
+	let date = new Date();
+	const data = {
+	  Order_CountProduct: 6,
+	  Order_TotalCost: 1350,
+	  Order_Date: date,
+	  Order_Status: "No",
+	  Order_CusName: "อรรถพล ตันติวัฒนะผล",
+	  Order_CusTel: "0827754150",
+	  Order_CusAdd: "ง.78/113 ถ.ดาวดึงส์ ต.ปากน้ำโพ อ.เมือง จ.นครสวรรค์ 60000",
+	  Order_DeliveryType: "ปลายทาง",
+	  Order_Tracking: "No"
+	};
+	return connectToDatabase()
+	.then(connection => {
+	  return insertIntoDatabase(connection, data)
+	  .then(result => {
+	 agent.add(`Data inserted`);       
+		connection.end();
+	  });
+	});
+  }
