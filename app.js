@@ -11,9 +11,15 @@ const { DateTime } = require('actions-on-google');
 const moment = require('moment');
 form = [];
 timedate = new Date();
-Status = "ยังไม่ได้ชำระเงิน";
+countProduct = 0;
 totalCost = 0;
-Tracking = "";
+deliveryType = '';
+statusDel = '';
+cusName = '';
+cusAdd = '';
+cusTel = '';
+currentDate = '';
+tracking = '';
   app.listen(port, () => {
 	console.log(`🌏 Server is running at http://localhost:${port}`)
 })
@@ -68,7 +74,7 @@ app.post('/', express.json(), (req, res)=>{
             const card = new Card(`${user.Product_Name} ราคา: ${user.Product_Cost}`);
             card.setImage(`https://8c44-1-46-158-203.ngrok.io/${user.Product_Picture}`);
             card.setText(`${user.Product_Detail}`);
-            card.setButton({text: `สั่งเลย`, url:`${user.Product_Name}`});
+            card.setButton({text: `สั่ง`+user.Product_Name, url:`${user.Product_Name}`});
             agent.add(card);
           }
         }); agent.add("สินค้าของทางร้านขายสมุนไพรชงดื่มเลือกซื้อได้เลยค่ะ")
@@ -103,9 +109,12 @@ app.post('/', express.json(), (req, res)=>{
       const {
         producttype1, number1      
       } = agent.parameters;
-      Order_form(number1);
-      Order_form(CostCalculate(producttype1, number1));
-      Order_form(moment(new Date()).format('YYYY-MM-DD HH:mm:ss'));
+      countProduct = number1;
+      totalCost = CostCalculate(producttype1, number1);
+      currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+      /*Order_form('Order_CountProduct: '+number1);
+      Order_form('Order_TotalCost: '+CostCalculate(producttype1, number1));
+      Order_form('Order_Date: '+moment(new Date()).format('YYYY-MM-DD HH:mm:ss'));*/
       agent.add("---- รวมเป็นเงิน ----")
       agent.add("ลูกค้าต้องการบริการส่งสินค้าในรูปแบบไหนดีคะ มี Kerry กับ Flash Express ค่ะ จ่ายปลายทางก็มีนะคะ")
     }
@@ -151,7 +160,6 @@ app.post('/', express.json(), (req, res)=>{
 
     function Order_form(inform){
         form.push(inform);
-        console.log(form)
         return form;
     }
 
@@ -159,8 +167,10 @@ app.post('/', express.json(), (req, res)=>{
       const {
         deliverytype      
       } = agent.parameters;
-      Order_form(deliverytype);
-      Order_form('ยังไม่ได้ชำระเงิน');
+      deliveryType = deliverytype;
+      statusDel = 'ยังไม่ได้ชำระเงิน';
+      /*Order_form('Order_DeliveryType: '+deliverytype);
+      Order_form('Order_Status: '+'ยังไม่ได้ชำระเงิน');*/
       agent.add("--ยอดสินค้าที่ต้องชำระเงิน--")
       agent.add("โอนผ่านธนาคาร กสิกร xxx x xxxxx x ไทยพาณิชย์ xxx x xxxxx x กรุงศรี xxx x xxx xx x ออมสิน xxx xxx xxx xxx")
       agent.add("โอนแล้วแจ้งสลิปพร้อมที่อยู่และเบอร์โทรนะคะ")
@@ -170,10 +180,14 @@ app.post('/', express.json(), (req, res)=>{
       const {
         any, phone, name
       } = agent.parameters;
-      Order_form(name);
-      Order_form(phone);
-      Order_form(any);
-      Order_form('None');
+      cusName = name;
+      cusTel = phone;
+      cusAdd = any;
+      tracking = 'None';
+      /*Order_form('Order_CusName: '+name);
+      Order_form('Order_CusTel: '+phone);
+      Order_form('Order_CusAdd: '+any);
+      Order_form('Order_Tracking: '+'None');*/
       agent.add("สินค้าจะจัดส่งภายใน 1-2 วันนะคะ ถ้าสินค้าจัดส่งแล้วจะมาแจ้งเลขพัสดุในนี้นะคะ ขอบคุณมากค่ะ")
     }
 
@@ -182,31 +196,29 @@ app.post('/', express.json(), (req, res)=>{
         Payment
       } = agent.parameters;
       form.pop();
-      form.push('ชำระเงินแล้ว');
+      form.push('Order_Status: '+'ชำระเงินแล้ว');
       agent.add("เงินเข้าแล้วค่ะ ขอชื่อที่อยู่และเบอร์โทรศัพท์ด้วยนะคะ")
       console.log(form);
     }
 
-    async function WriteOrder(agent){   
-       
-      const data = {
-        Order_CountProduct: 6,
-        Order_TotalCost: 2200,
-        Order_Date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-        Order_Status: `ยังไม่ชำระเงิน`,
-        Order_CusName: `อรรถพล ตันติวัฒนะผล`,
-        Order_CusTel: `0827754150`,
-        Order_CusAdd: `110/9 ม.5 ต.บึง อ.ศรีราชา จ.ชลบุรี`,
-        Order_DeliveryType: `Kerry`,
-        Order_Tracking: `none`,
+    async function WriteOrder(agent){  
+      console.log(data);
+      var data = {
+        Order_CountProduct: countProduct,
+        Order_TotalCost: totalCost,
+        Order_DeliveryType: deliveryType,        
+        Order_Status: statusDel,
+        Order_CusName: cusName,
+        Order_CusAdd: cusAdd,
+        Order_CusTel: cusTel,
+        Order_Date: currentDate,        
+        Order_Tracking: tracking,
       };
+      console.log(data);
       const connection = await connectToDatabase();
       const result_2 = await insertIntoDatabase(connection, data);
       agent.add(`เก็บเรียบร้อย`);
-      console.log(form);
       form = [];
-      console.log(form);
-      console.log(data);
       connection.end();
       }
         
