@@ -9,6 +9,8 @@ const {Card, Suggestion} = require('dialogflow-fulfillment');
 const {Payload} = require('dialogflow-fulfillment');
 const { DateTime } = require('actions-on-google');
 const moment = require('moment');
+
+prodName = '';
 form = [];
 timedate = new Date();
 countProduct = 0;
@@ -110,13 +112,15 @@ app.post('/', express.json(), (req, res)=>{
         producttype1, number1      
       } = agent.parameters;
       countProduct = number1;
+      prodName = producttype1
       totalCost = CostCalculate(producttype1, number1);
       currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
       /*Order_form('Order_CountProduct: '+number1);
       Order_form('Order_TotalCost: '+CostCalculate(producttype1, number1));
       Order_form('Order_Date: '+moment(new Date()).format('YYYY-MM-DD HH:mm:ss'));*/
-      agent.add("---- รวมเป็นเงิน ----")
-      agent.add("ลูกค้าต้องการบริการส่งสินค้าในรูปแบบไหนดีคะ มี Kerry กับ Flash Express ค่ะ จ่ายปลายทางก็มีนะคะ")
+      agent.add("ต้องการสินค้า "+producttype1+" เป็นจำนวน "+number1+ " ชุดนะคะ")
+      agent.add("รวมเป็นเงิน "+totalCost+" บาท")
+      agent.add("ยืนยันรายการสินค้านี้นะคะ หรือต้องการสั่งสินค้าใหม่ให้พิมพ์ สั่งใหม่")
     }
     
     function CostCalculate(producttype, number){
@@ -162,18 +166,45 @@ app.post('/', express.json(), (req, res)=>{
         form.push(inform);
         return form;
     }
-
-    function Kerry(agent){
+    function Delivery(agent){
       const {
-        deliverytype      
+        deliverytype
       } = agent.parameters;
       deliveryType = deliverytype;
       statusDel = 'ยังไม่ได้ชำระเงิน';
-      /*Order_form('Order_DeliveryType: '+deliverytype);
-      Order_form('Order_Status: '+'ยังไม่ได้ชำระเงิน');*/
-      agent.add("--ยอดสินค้าที่ต้องชำระเงิน--")
-      agent.add("โอนผ่านธนาคาร กสิกร xxx x xxxxx x ไทยพาณิชย์ xxx x xxxxx x กรุงศรี xxx x xxx xx x ออมสิน xxx xxx xxx xxx")
-      agent.add("โอนแล้วแจ้งสลิปพร้อมที่อยู่และเบอร์โทรนะคะ")
+      if(deliverytype == 'Flash Express'){
+        agent.add("สั่งซื้อสินค้า "+prodName+" "+countProduct+" ชุด"+ "โดยใช้บริการขนส่งแบบ "+deliverytype)
+        agent.add("รวมเป็นเงิน "+ totalCost +" บาท")
+        agent.add("พิมพ์ 'ยืนยัน' เพื่อยืนยันคำสั่งซื้อนี้ หรือ 'เปลี่ยน' เพื่อเปลี่ยนประเภทการขนส่ง หรือ 'ยกเลิก' เพื่อยกเลิกคำสั่งซื้อ")
+      }else if(deliverytype == 'Kerry'){
+          agent.add("สั่งซื้อสินค้า "+prodName+" "+countProduct+" ชุด"+ "โดยใช้บริการขนส่งแบบ "+deliverytype)
+          agent.add("รวมเป็นเงิน "+ totalCost +" บาท")
+          agent.add("พิมพ์ 'ยืนยัน' เพื่อยืนยันคำสั่งซื้อนี้ หรือ 'เปลี่ยน' เพื่อเปลี่ยนประเภทการขนส่ง หรือ 'ยกเลิก' เพื่อยกเลิกคำสั่งซื้อ")
+      }else if(deliverytype == 'Flash Express (COD)'){
+        agent.add("สั่งซื้อสินค้า "+prodName+" "+countProduct+" ชุด"+ "โดยใช้บริการขนส่งแบบ "+deliverytype)
+        agent.add("รวมเป็นเงิน "+ totalCost +" บาท")
+        agent.add("พิมพ์ 'ยืนยัน' เพื่อยืนยันคำสั่งซื้อนี้ หรือ 'เปลี่ยน' เพื่อเปลี่ยนประเภทการขนส่ง หรือ 'ยกเลิก' เพื่อยกเลิกคำสั่งซื้อ")
+      }else if(deliverytype == 'Kerry (COD)'){
+        agent.add("สั่งซื้อสินค้า "+prodName+" "+countProduct+" ชุด"+ "โดยใช้บริการขนส่งแบบ "+deliverytype)
+        agent.add("รวมเป็นเงิน "+ totalCost +" บาท")
+        agent.add("พิมพ์ 'ยืนยัน' เพื่อยืนยันคำสั่งซื้อนี้ หรือ 'เปลี่ยน' เพื่อเปลี่ยนประเภทการขนส่ง หรือ 'ยกเลิก' เพื่อยกเลิกคำสั่งซื้อ")
+      }
+    }
+
+    function DeliveryYes(agent){
+      if(deliveryType == 'Flash Express'){
+        agent.add("ชำระเงินผ่านธนาคาร กสิกร xxx x xxxxx x ไทยพาณิชย์ xxx x xxxxx x กรุงศรี xxx x xxx xx x ออมสิน xxx xxx xxx xxx")
+        agent.add("โอนแล้วแจ้งหลักฐานการโอนเงิน เพื่อให้แอดมินตรวจสอบก่อนนะคะ")
+      }else if(deliveryType == 'Kerry'){
+        agent.add("ชำระเงินผ่านธนาคาร กสิกร xxx x xxxxx x ไทยพาณิชย์ xxx x xxxxx x กรุงศรี xxx x xxx xx x ออมสิน xxx xxx xxx xxx")
+        agent.add("โอนแล้วแจ้งหลักฐานการโอนเงิน เพื่อให้แอดมินตรวจสอบก่อนนะคะ")
+      }else if(deliveryType == 'Flash Express (COD)'){
+        agent.add("ราคาทั้งหมดที่ต้องชำระเป็น "+ totalCost +" บาทนะคะ")
+        agent.add("ขอชื่อ ที่อยู่และเบอร์โทรด้วยค่ะ")
+      }else if(deliveryType == 'Kerry (COD)'){
+        agent.add("ราคาทั้งหมดที่ต้องชำระเป็น "+ totalCost +" บาทนะคะ")
+        agent.add("ขอชื่อ ที่อยู่และเบอร์โทรด้วยค่ะ")
+      }
     }
 
     function Cus_Address(agent){
@@ -192,13 +223,17 @@ app.post('/', express.json(), (req, res)=>{
     }
 
     function Payment(agent){
-      const {
-        Payment
-      } = agent.parameters;
-      form.pop();
-      form.push('Order_Status: '+'ชำระเงินแล้ว');
-      agent.add("เงินเข้าแล้วค่ะ ขอชื่อที่อยู่และเบอร์โทรศัพท์ด้วยนะคะ")
-      console.log(form);
+        const imageUrl = agent.request_.body.originalDetectIntentRequest.payload.data.message.attachments[0].payload.url;
+        agent.add("ถ้าโอนเงินพร้อมแปะหลักฐานการโอนแล้ว ให้พิมพ์ 'ยืนยัน' เพื่อแจ้งให้แอดมินตรวจสอบหรือถ้าเกิดข้อผิดพลาดให้พิมพ์ 'แก้ไข' แล้วส่งหลักฐานการโอนใหม่ค่ะ")
+        console.log(imageUrl);
+    }
+
+    function PaymentAddress(agent){
+        const {
+          address
+        } = agent.parameters;
+        console.log(address)
+        agent.add("ส่งที่อยู่ "+address+" นี้นะคะ ยืนยันที่อยู่นี้ให้พิมพ์ 'ยืนยัน' หรือต้องการแก้ไขที่อยู่ใหม่พิมพ์ 'แก้ไข'")
     }
 
     async function WriteOrder(agent){  
@@ -227,9 +262,12 @@ app.post('/', express.json(), (req, res)=>{
     intentMap.set('เรียกดูสินค้า',product)
     intentMap.set('OrderIn', WriteOrder)
     intentMap.set('สั่งสินค้า', Order)
-    intentMap.set('Delivery.Kerry', Kerry)
     intentMap.set('รับที่อยู่', Cus_Address)
     intentMap.set('Payment', Payment)
+    intentMap.set('Payment - yes - Address', PaymentAddress)
+    intentMap.set('DeliveryChoose', Delivery)
+    intentMap.set('DeliveryChoose - yes', DeliveryYes)
+
     /*intentMap.set('test', test1)*/
     agent.handleRequest(intentMap);
 });
