@@ -1,16 +1,19 @@
+
 const express = require('express');
-const app = express();
+const bodyParser = require('body-parser');
+const app = express().use(bodyParser.json());
 const dfff = require('dialogflow-fulfillment');
 const port = 5000;
 const mysql = require('mysql');
 const {Image} = require('dialogflow-fulfillment');
 const {WebhookClient} = require('dialogflow-fulfillment');
-const {Card, Suggestion} = require('dialogflow-fulfillment');
+const {Card} = require('dialogflow-fulfillment');
+const {Suggestion} = require('dialogflow-fulfillment');
 const {Payload} = require('dialogflow-fulfillment');
 const { DateTime } = require('actions-on-google');
 const moment = require('moment');
 const getFacebookIds = require('get-facebook-id');
-
+const VERIFY_TOKEN = 'Jamemo';
 prodName = '';
 form = [];
 timedate = new Date();
@@ -32,17 +35,27 @@ process.env.DEBUG = 'dialogflow:debug'; // enables lib debugging statements
 
 
 
+app.use(bodyParser.urlencoded({ extended: true }))
+app.use(bodyParser.json())
 
   app.listen(port, () => {
 	console.log(`🌏 Server is running at http://localhost:${port}`)
-})
-
-app.get('/', (req, res)=>{
-    res.send("Working")
+});
+app.get('/', function (_req, res) {
+  res.send('Hello World');
 });
 
 app.post('/webhook', express.json(), (req, res)=>{
     const agent = new dfff.WebhookClient({request : req,response : res});
+    JSON.stringify(req.headers);
+    JSON.stringify(req.body);
+    console.log(req);
+      let action = req.body.queryResult.action; 
+      console.log(action);
+      let responseJson = {};
+    responseJson.fulfillmentText = 'This is an endpoint published to RunKit'; // displayed response 
+
+
 
     function connectToDatabase(){
       const connection = mysql.createConnection({
@@ -129,17 +142,36 @@ app.post('/webhook', express.json(), (req, res)=>{
       /*Order_form('Order_CountProduct: '+number1);
       Order_form('Order_TotalCost: '+CostCalculate(producttype1, number1));
       Order_form('Order_Date: '+moment(new Date()).format('YYYY-MM-DD HH:mm:ss'));*/ 
-      agent.add("ต้องการสินค้า "+producttype1+" เป็นจำนวน "+number1+ " ชุดนะคะ")
-      agent.add("รวมเป็นเงิน "+totalCost+" บาท")
-      agent.add("ต้องการขนส่งแบบไหนดีคะ มีบริการ Kerry และ Flash express และรองรับจ่ายเงินปลายทางค่ะ")
-
       
+          let richResponses = [
+            {
+              "quickReplies":{
+                "title": "ต้องการขนส่งแบบไหนดีคะ มีบริการ Kerry และ Flash express และรองรับจ่ายเงินปลายทางค่ะ",
+                
+                "quickReplies":[
+                  "Kerry",
+                  "Flash express",
+                  "Kerry(COD)",
+                  "Flash express(COD)"
+                ]
+              },
+              "plateform": "FACEBOOK"
+            }
+          ]
+        responseJson.fulfillmentMessages = richResponses;
+        console.log(responseJson);
+        res.json(responseJson);  
+        agent.add("ต้องการสินค้า "+producttype1+" เป็นจำนวน "+number1+ " ชุดนะคะ")
+        agent.add("รวมเป็นเงิน "+totalCost+" บาท")
+        agent.add("ต้องการขนส่งแบบไหนดีคะ มีบริการ Kerry และ Flash express และรองรับจ่ายเงินปลายทางค่ะ")
+      
+
       /*agent.add(new Suggestion('Flash Express'));
       agent.add(new Suggestion('Flash Express(COD)'));
       agent.add(new Suggestion('Kerry'));
       agent.add(new Suggestion('Kerry(COD)'));*/
-  
-    }
+      
+      }
   
   
     
@@ -196,21 +228,73 @@ app.post('/webhook', express.json(), (req, res)=>{
       deliveryType = deliverytype;
       statusDel = 'ยังไม่ได้ชำระเงิน';
       if(deliverytype == 'Flash Express'){
-        agent.add("สั่งซื้อสินค้า "+prodName+" "+countProduct+" ชุด"+ "โดยใช้บริการขนส่งแบบ "+deliverytype)
-        agent.add("รวมเป็นเงิน "+ totalCost +" บาท")
-        agent.add("คุณลูกค้ายืนยันออเดอร์นี้นะคะ")
+          let richResponses = [
+            {
+              "quickReplies":{
+                "title": "สั่งซื้อสินค้า "+prodName+" "+countProduct+" ชุด"+ "โดยใช้บริการขนส่งแบบ "+ deliverytype + "\n\n" + "รวมเป็นเงิน "+ totalCost +" บาท \n\n" + "คุณลูกค้ายืนยันออเดอร์นี้นะคะ",
+                
+                "quickReplies":[
+                  "ยืนยัน",
+                  "ยกเลิก",
+                ]
+              },
+              "plateform": "FACEBOOK"
+            }
+          ]
+          responseJson.fulfillmentMessages = richResponses;
+          console.log(responseJson);
+          res.json(responseJson);  
       }else if(deliverytype == 'Kerry'){
-          agent.add("สั่งซื้อสินค้า "+prodName+" "+countProduct+" ชุด"+ "โดยใช้บริการขนส่งแบบ "+deliverytype)
-          agent.add("รวมเป็นเงิน "+ totalCost +" บาท")
-          agent.add("คุณลูกค้ายืนยันออเดอร์นี้นะคะ")
-      }else if(deliverytype == 'Flash Express (COD)'){
-        agent.add("สั่งซื้อสินค้า "+prodName+" "+countProduct+" ชุด"+ "โดยใช้บริการขนส่งแบบ "+deliverytype)
-        agent.add("รวมเป็นเงิน "+ totalCost +" บาท")
-        agent.add("คุณลูกค้ายืนยันออเดอร์นี้นะคะ")
+          let richResponses = [
+            {
+              "quickReplies":{
+                "title": "สั่งซื้อสินค้า "+prodName+" "+countProduct+" ชุด"+ "โดยใช้บริการขนส่งแบบ "+ deliverytype + "\n\n" + "รวมเป็นเงิน "+ totalCost +" บาท \n\n" + "คุณลูกค้ายืนยันออเดอร์นี้นะคะ",
+                
+                "quickReplies":[
+                  "ยืนยัน",
+                  "ยกเลิก",
+                ]
+              },
+              "plateform": "FACEBOOK"
+            }
+          ]
+          responseJson.fulfillmentMessages = richResponses;
+          console.log(responseJson);
+          res.json(responseJson); 
+      }else if(deliverytype == 'Flash Express (COD)'){          
+          let richResponses = [
+            {
+              "quickReplies":{
+                "title": "สั่งซื้อสินค้า "+prodName+" "+countProduct+" ชุด"+ "โดยใช้บริการขนส่งแบบ "+ deliverytype + "\n\n" + "รวมเป็นเงิน "+ totalCost +" บาท \n\n" + "คุณลูกค้ายืนยันออเดอร์นี้นะคะ",
+                
+                "quickReplies":[
+                  "ยืนยัน",
+                  "ยกเลิก",
+                ]
+              },
+              "plateform": "FACEBOOK"
+            }
+          ]
+          responseJson.fulfillmentMessages = richResponses;
+          console.log(responseJson);
+          res.json(responseJson); 
       }else if(deliverytype == 'Kerry (COD)'){
-        agent.add("สั่งซื้อสินค้า "+prodName+" "+countProduct+" ชุด"+ "โดยใช้บริการขนส่งแบบ "+deliverytype)
-        agent.add("รวมเป็นเงิน "+ totalCost +" บาท")
-        agent.add("คุณลูกค้ายืนยันออเดอร์นี้นะคะ")
+          let richResponses = [
+            {
+              "quickReplies":{
+                "title": "สั่งซื้อสินค้า "+prodName+" "+countProduct+" ชุด"+ "โดยใช้บริการขนส่งแบบ "+ deliverytype + "\n\n" + "รวมเป็นเงิน "+ totalCost +" บาท \n\n" + "คุณลูกค้ายืนยันออเดอร์นี้นะคะ",
+                
+                "quickReplies":[
+                  "ยืนยัน",
+                  "ยกเลิก",
+                ]
+              },
+              "plateform": "FACEBOOK"
+            }
+          ]
+          responseJson.fulfillmentMessages = richResponses;
+          console.log(responseJson);
+          res.json(responseJson); 
       }
     }
 
@@ -245,13 +329,13 @@ app.post('/webhook', express.json(), (req, res)=>{
       agent.add("ส่งให้ภายใน 1-2 วันนี้นะคะ")
     }
 
-    function Payment(agent){
+    function Payment(agent){ // ส่งสลิปจ่ายเงินก่อน
         const imageUrl = agent.request_.body.originalDetectIntentRequest.payload.data.message.attachments[0].payload.url;
         agent.add("ขอบคุณค่ะ อย่าลืมส่งชื่อ - ที่อยู่ และเบอร์โทรมาให้แอดมินนะ")
         console.log(imageUrl);
     }
 
-    function PaymentAddress(agent){
+    function PaymentAddress(agent){ // ส่งชื่อที่อยู่ เบอร์โทรให้หลังจากจ่ายเงินแล้ว
         const {
           address, phoneNumber, givenName, lastName
         } = agent.parameters;
@@ -260,7 +344,7 @@ app.post('/webhook', express.json(), (req, res)=>{
         agent.add("สินค้าจะส่งภายใน 1-2 วันนะคะ ส่งแล้วจะแปะเลขในนี้ ขอบคุณมากค่ะ")
     }
 
-    function GetAddress(agent){
+    function GetAddress(agent){ // รับที่อยู่ก่อน
       const {
         address, phoneNumber, givenName, lastName
       } = agent.parameters;
@@ -268,9 +352,12 @@ app.post('/webhook', express.json(), (req, res)=>{
         phoneNumberTemp = phoneNumber;
         givenNameTemp = givenName;
         lastNameTemp = lastName;
+        console.log(givenName + " " + lastName + " " + address + " " + phoneNumber )
+
+        agent.add("เป็นชื่อที่อยู่นี้นะคะ")
     }
 
-    function AddressPayment(agent){
+    function AddressPayment(agent){ // จ่ายเงินหลังจากส่งชื่อที่อยู่ เบอร์โทร
       const imageUrl = agent.request_.body.originalDetectIntentRequest.payload.data.message.attachments[0].payload.url;
       agent.add("สั่ง " + prodName + " " + countProduct + " ชุด เป็นเงิน "+ totalCost +" บาท โดยบริการขนส่ง " + deliveryType + " ส่งที่คุณ" + givenNameTemp + " " + lastNameTemp + " " + addressTemp + " " + phoneNumberTemp +" นะคะ")
       agent.add("สินค้าจะส่งภายใน 1-2 วันนะคะ ส่งแล้วจะแปะเลขในนี้ ขอบคุณมากค่ะ")    
@@ -281,6 +368,7 @@ app.post('/webhook', express.json(), (req, res)=>{
         const {
           address, phoneNumber, givenName, lastName
         } = agent.parameters;
+        console.log(givenName + " " + lastName + " " + address + " " + phoneNumber )
         agent.add("สั่ง " + prodName + " " + countProduct + " ชุด เป็นเงิน "+ totalCost +" บาท โดยบริการขนส่ง " + deliveryType + " ส่งที่คุณ" + givenName + " " + lastName + " " + address + " " + phoneNumber +" นะคะ")
         agent.add("สินค้าจะส่งภายใน 1-2 วันนะคะ ส่งแล้วจะแปะเลขในนี้ ขอบคุณมากค่ะ")    
     }
