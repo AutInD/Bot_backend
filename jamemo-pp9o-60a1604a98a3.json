@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "jamemo-pp9o",
+  "private_key_id": "60a1604a98a3c59683b0f5a225b39d430360e3d6",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDeDJ9aqzQR/KBF\nI377gn7C7jHdY7+V75wNapy+i49RtRNnL1nT6uRNTnnGXIO8siANgzngVguestoS\nxUipGCCeQ3FvtR5GTMwLg0x5m/O8nwyx52uDrehC1PZvYY3OHkpEHK7Y1NCQ94Bo\nuEercigVzS8JHATqTwEh7nuGYuxyTCQs6JnAU7VayKpr5pvju9LdbRg6BfHje39B\nvncTbNC4gqdwhlLCHhMLt0eBsP+KYFtWT4kHS9mrdIBPH4bkxk/bP9xpXBK/WDvV\nuSetm3KJ8QgobdUpeBeUrcqIKBfCAktrOed2+Wyc65atZ3vUEuWQ7tDncLg4o0qA\nVaJcuQiPAgMBAAECggEALg1AH3XSXsieFLi/5TmzQIpWHSxK17XSD5ZE29/l4XRE\nienwH1tf7giQiOs3BzOKIkNNBZHS5x8Ay1PPNgKjAS/LnvdZSAs1Zk3c1nvZmQ0D\nfQIZ8j1nJjU0xvTcjBsMHAQ23xGEEAzEvPM7KfuLBLqBPspo2o94FKl5RO3PTATL\nm340Zr6wkNMtVDKt4P9CYVl+bzS0f9yVDjomcBbyUMFulFB4ZIEbE+JbW53Xgcs7\ntqnmQ4ZCYf5PyVsJ3dGc3xXA/JdgpineiskG019T8H/TCB4u1m3saRTSkABhfC60\nzy/M/5ijwypHu3yyls+b1B+hRsSiqdfhXM9tlU1NwQKBgQD5s8K/HQobQu6e1a0o\nMkl2/wZ+S75bMN7OfJ+SJZgczkqOwVa1S0qIyIxu/VQxJWq8VLs7d1m/GWUMEtbd\nATv5WUwB4bD8SfHfWUSneSlV/sU1yfiL9hcpzs15xZO/its8FjkrPZhcIpKetPqF\naEhmFamudMnVUWCWdy3dNZBnUwKBgQDjplEZraBBDWJxTjNiv4N48BuRes1R5y2M\njfzncsbyJmtWzj5K80HX6utGP3sIkABdujQUDV/WAgANLcQB3jN/U/JYc58V5vZ4\nbKRivXIf3J3RULlCyQ/PqATcf1J4hmeufItHdf7pFGBMFxSNLrm5HtcJ6u5uTuDa\nhUxW60keVQKBgGBuAE5Hy6hdf8NNJ3K3gNF4iSxq2ddjlxfM3t7Ur9qn+/kHRxH6\nQo1yTXFrWYElPwP+ANRlMf5vsysnd1yf5mZUCttLKkszzzl+wtmeG81+9u/f0KFU\nZvuZRpa5K2a0HBgnSOqe/eDO5SpvH7Q3YoYx5XZe2bcMly1kVwzva5XLAoGABFMb\nhU5cFgBIF3jx1vVmbPy6uVfI4L5wihQEcu0mRGFgdqSyYEAgxxZKY+o+zxnVN/Ka\nnKroYCtnjtiIubRb7BZPK0j/A66AjicaNFn++gX55YkQC+m/6CT7+qhci7eZ7qGl\nD7V5Izpk3e0uUcRKeO7SDPkukF/lO6F+osQTfoUCgYBz98RlQHGwXMEK3OoSr3j/\nFOJwLMhN9523uGouo/xILpzn05Y4ScGmsSlqNf/RIVG/bQsPQTjzBBEyG1nf+71A\n43G5oXltH4gldHbve/jRJUwB9uOK6G3xxhavwN/xGP5ggfsQquaX1mqleiK6mDcg\nN6NMe/R0HB0lMWvsTsGhEA==\n-----END PRIVATE KEY-----\n",
+  "client_email": "jamemo-cloudplatform2@jamemo-pp9o.iam.gserviceaccount.com",
+  "client_id": "102876580102599296500",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/jamemo-cloudplatform2%40jamemo-pp9o.iam.gserviceaccount.com"
+}

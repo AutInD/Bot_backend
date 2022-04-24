@@ -1,0 +1,13 @@
+[
+{"type":"header","version":"5.1.1","comment":"Export to JSON plugin for PHPMyAdmin"},
+{"type":"database","name":"chatbotforsmesdb"},
+{"type":"table","name":"product","database":"chatbotforsmesdb","data":
+[
+{"idProduct":"4","Product_Name":"กระชายขาวผสมขิง","Product_Count":"400","Product_Expire":"2022-09-01","Product_Cost":"250","Product_Detail":"กระชายขาวที่ผสมขิงซึ่งผสานกันอย่างลงตัวเหมาะสำหรับคนที่เป็นเบาหวาน ความดัน","Product_Picture":null},
+{"idProduct":"2","Product_Name":"กระชายดำผสมงาดำ","Product_Count":"300","Product_Expire":"2022-09-01","Product_Cost":"250","Product_Detail":"กระชายดำธรรมชาติที่ผสมงาดำ","Product_Picture":null},
+{"idProduct":"3","Product_Name":"ถังเช่าสีทอง","Product_Count":"150","Product_Expire":"2022-09-01","Product_Cost":"320","Product_Detail":"ถังเช่านำเข้าจากเมืองจีน","Product_Picture":null},
+{"idProduct":"5","Product_Name":"ฟ้าทลายโจรผสมกระชายขาว","Product_Count":"400","Product_Expire":"2022-09-01","Product_Cost":"280","Product_Detail":"ฟ้าทลายโจรผสมกระชายขาวช่วยลดความดัน ต่อต้านเชื้อไวรัสโควิด 19","Product_Picture":null},
+{"idProduct":"1","Product_Name":"เห็ดหลินจือ","Product_Count":"300","Product_Expire":"2022-09-01","Product_Cost":"300","Product_Detail":"เห็ดหลินจือจากเมืองจีนที่ปลูกบนเขาเหลียงซานกว่า 5 ปี","Product_Picture":null}
+]
+}
+]
