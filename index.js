@@ -564,6 +564,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
             }
           }                                      
         });
+        // คิวรี่ข้อมูล order ออกมา
         return queryOrderDtDatabase(connection)
         .then(result => {
           for(let a = 0; a < result.length; a++){
