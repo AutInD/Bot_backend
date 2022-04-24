@@ -42,8 +42,8 @@ process.env.DEBUG = 'dialogflow:debug'; // enables lib debugging statements
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 
-  app.listen(port, () => {
-	console.log(`🌏 Server is running at http://localhost:${port}`)
+app.listen(process.env.PORT || 5000, function(){
+  console.log("Express server listening on port %d in %s mode", this.address().port, app.settings.env);
 });
 app.get('/', function (_req, res) {
   res.send('Hello World');
