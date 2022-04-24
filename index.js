@@ -381,14 +381,13 @@ app.post('/chatbot', express.json(), (req, res)=>{
                         fk_product_id: idProduct,
                         od_qty: countProduct[b],
                       };  
-                      
+                      insertIntoDatabase2(connection, data);
                     }else{
                       agent.add('ขอโทษด้วยนะคะ ' + prodName[b] + ' เหลืออยู่ ' + `${result[v].Product_Count} ถุงค่ะ` )
                       plus2 = true;
                     }
                   }
-                }
-                insertIntoDatabase2(connection, data);
+                }                
               }
               if(plus == true && plus2 == false) {
                 let richResponses = [
