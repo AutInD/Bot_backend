@@ -713,7 +713,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
 
     function Payment(agent){ // ส่งสลิปจ่ายเงินก่อน
         const imageUrl = agent.request_.body.originalDetectIntentRequest.payload.data.message.attachments[0].payload.url;
-        agent.add("ขอบคุณค่ะ อย่าลืมส่งชื่อ - ที่อยู่ และเบอร์โทรมาให้แอดมินนะ")
+        agent.add("โปรดรอแอดมินตรวจสอบการชำระเงินสักครู่นะคะ ระหว่างนี้ส่งชื่อ - ที่อยู่ และเบอร์โทรมาให้แอดมินได้เลยค่ะ")
         console.log(imageUrl);
         statusDel = "รอการตรวจสอบ"
         orderPayment = imageUrl;
@@ -728,7 +728,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
         cusName = any;
         console.log(cusName + " " + addressTemp + " " + phoneNumberTemp )
         agent.add("สั่ง " + prodName + " " + countProduct + " ชุด โดยบริการขนส่ง " + deliveryType + " ส่งที่คุณ " + req.body.queryResult.queryText +" นะคะ")
-        agent.add("สินค้าจะส่งภายใน 1-2 วันนะคะ ส่งแล้วจะแปะเลขในนี้ ขอบคุณมากค่ะ")
+        agent.add("ถ้าแอดมินยืนยันการชำระเงินแล้ว สินค้าจะส่งภายใน 1-2 วันนะคะ ส่งแล้วจะแปะเลขในนี้ ขอบคุณมากค่ะ")
         
     }
 
@@ -750,12 +750,12 @@ app.post('/chatbot', express.json(), (req, res)=>{
 
         }else if(deliveryType == 'Flash Express (COD)'){
           console.log(any + " " + address + " " + phoneNumber )
-          agent.add("สั่ง " + prodName + " " + countProduct + " ชุด เป็นเงิน "+ totalCost +" บาท โดยบริการขนส่ง " + deliveryType + " ที่อยู่" + " " + req.body.queryResult.queryText +" นะคะ")
+          agent.add("ที่อยู่" + " " + req.body.queryResult.queryText +" นะคะ")
           agent.add("สินค้าจะส่งภายใน 1-2 วันนะคะ ส่งแล้วจะแปะเลขในนี้ ขอบคุณมากค่ะ") 
 
         }else if(deliveryType == 'Kerry (COD)'){
           console.log(any + " " + address + " " + phoneNumber )
-          agent.add("สั่ง " + prodName + " " + countProduct + " ชุด เป็นเงิน "+ totalCost +" บาท โดยบริการขนส่ง " + deliveryType + " ที่อยู่" +  " " + req.body.queryResult.queryText +" นะคะ")
+          agent.add("ที่อยู่" +  " " + req.body.queryResult.queryText +" นะคะ")
           agent.add("สินค้าจะส่งภายใน 1-2 วันนะคะ ส่งแล้วจะแปะเลขในนี้ ขอบคุณมากค่ะ") 
         }
     }
@@ -763,7 +763,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
     function AddressPayment(agent){ // จ่ายเงินหลังจากส่งชื่อที่อยู่ เบอร์โทร
       const imageUrl = agent.request_.body.originalDetectIntentRequest.payload.data.message.attachments[0].payload.url;
       agent.add("สั่ง " + prodName + " " + countProduct + " ชุด เป็นเงิน "+ totalCost +" บาท โดยบริการขนส่ง " + deliveryType + " ที่อยู่ " + cusName + " " + addressTemp + " " + phoneNumberTemp  +" นะคะ")
-      agent.add("สินค้าจะส่งภายใน 1-2 วันนะคะ ส่งแล้วจะแปะเลขในนี้ ขอบคุณมากค่ะ")    
+      agent.add("ถ้าแอดมินยืนยันการชำระเงินแล้ว สินค้าจะส่งภายใน 1-2 วันนะคะ ส่งแล้วจะแปะเลขในนี้ ขอบคุณมากค่ะ")    
       console.log(imageUrl);
       orderPayment = imageUrl;
       statusDel = 'รอการตรวจสอบ';
