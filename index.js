@@ -159,7 +159,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
         //console.log(result);
         result.map(user => {          
             const card = new Card(`${user.Product_Name} ราคา: ${user.Product_Cost}`);
-            card.setImage(`https://fad2-2403-6200-88a3-b35b-7c53-4dd0-2492-7c51.ngrok.io/${user.Product_Picture}`);
+            card.setImage(`https://apigreenneplus.herokuapp.com/${user.Product_Picture}`);
             card.setText(`${user.Product_Detail}`);
             card.setButton({text: `สั่ง`+user.Product_Name, url:`${user.Product_Name}`});
             agent.add(card);           
@@ -181,14 +181,14 @@ app.post('/chatbot', express.json(), (req, res)=>{
           for(let n = 0; n < result.length;n++){
             if(producttype == `${result[n].Product_Name}`){
               const card = new Card(`${result[n].Product_Name} ราคา: ${result[n].Product_Cost}`);
-              card.setImage(`https://fad2-2403-6200-88a3-b35b-7c53-4dd0-2492-7c51.ngrok.io/${result[n].Product_Picture}`);
+              card.setImage(`https://apigreenneplus.herokuapp.com/${result[n].Product_Picture}`);
               card.setText(`${result[n].Product_Detail}`);
               card.setButton({text: `สั่ง`+result[n].Product_Name, url:`${result[n].Product_Name}`});
               agent.add(card);
               }
             else if(producttype == 'เห็ดหลินจือ'){
               const card2 = new Card(`${result[0].Product_Name} ราคา: ${result[0].Product_Cost}`);
-              card2.setImage(`https://fad2-2403-6200-88a3-b35b-7c53-4dd0-2492-7c51.ngrok.io/${result[0].Product_Picture}`);
+              card2.setImage(`https://apigreenneplus.herokuapp.com/${result[0].Product_Picture}`);
               card2.setText(`${result[0].Product_Detail}`);
               card2.setButton({text: `สั่งเห็ดหลินจือ`, url:`สั่งเห็ดหลินจือ`});
               agent.add(card2);
