@@ -204,13 +204,10 @@ app.post('/chatbot', express.json(), (req, res)=>{
       let plus2 = false;
       let pdName = [];
       countProduct = number1; 
-
         for (let n = 0; n < producttype1.length ; n++){
           check = producttype1[n] == 'เห็ดหลินจือ';
           if(check == true)break;
         }
-  
-
         data = {
           Order_SenderID : req.body.originalDetectIntentRequest.payload.data.sender.id
         }
@@ -639,9 +636,9 @@ app.post('/chatbot', express.json(), (req, res)=>{
     function DeliveryYes(agent){
       let idVerify = 0;
       const imageUrl = 'https://media.discordapp.net/attachments/638022361454477322/965555830181220402/95510519_242757083597369_7226599770523959296_n.jpg?width=473&height=473'
-        const anotherImage = new Image({
-              imageUrl: imageUrl,
-              platform: 'FACEBOOK'
+      const anotherImage = new Image({
+            imageUrl: imageUrl,
+            platform: 'FACEBOOK'
       });
       return connectToDatabase()
       .then(connection => {
@@ -652,42 +649,44 @@ app.post('/chatbot', express.json(), (req, res)=>{
             }
           }                                      
         });
-        return queryOrderDtDatabase(connection)
+        return queryOrderDatabase(connection)
         .then(result => {        
           for(let a = 0; a < result.length; a++){
             if(result[a].Order_DeliveryType == 'Flash Express' && idVerify == result[p].id){
+              agent.add(anotherImage);
+              agent.add("แจ้งสลิปพร้อมชื่อ - ที่อยู่ และเบอร์โทรนะคะ")
               data = {
                 id: idVerify,
                 Order_Status: 'ยังไม่ได้ชำระเงิน',
               }
               updateOrTotal(connection,data)
-              agent.add(anotherImage);
-              agent.add("แจ้งสลิปพร้อมชื่อ - ที่อยู่ และเบอร์โทรนะคะ")
               
             }else if(result[a].Order_DeliveryType == 'Kerry' && idVerify == result[p].id){
+              agent.add(anotherImage);
+              agent.add("แจ้งสลิปพร้อมชื่อ - ที่อยู่ และเบอร์โทรนะคะ")
               data = {
                 id: idVerify,
                 Order_Status: 'ยังไม่ได้ชำระเงิน',
               }
               updateOrTotal(connection,data)
-              agent.add(anotherImage);
-              agent.add("แจ้งสลิปพร้อมชื่อ - ที่อยู่ และเบอร์โทรนะคะ")
             }else if(result[a].Order_DeliveryType == 'Flash Express (COD)' && idVerify == result[p].id){
+              agent.add("แจ้งที่อยู่พร้อมเบอร์โทรได้เลยค่ะ")  
               data = {
                 id: idVerify,
                 Order_Status: 'ยังไม่ได้ชำระเงิน(COD)',
                 Order_Payment: 'ยังไม่ได้ชำระเงิน(COD)'
               }
-              updateOrTotal(connection,data)
-              agent.add("แจ้งที่อยู่พร้อมเบอร์โทรได้เลยค่ะ")        
+              updateOrTotal(connection,data)      
             }else if(result[a].Order_DeliveryType == 'Kerry (COD)' && idVerify == result[p].id){
+              agent.add("แจ้งที่อยู่พร้อมเบอร์โทรได้เลยค่ะ")
               data = {
                 id: idVerify,
                 Order_Status: 'ยังไม่ได้ชำระเงิน(COD)',
                 Order_Payment: 'ยังไม่ได้ชำระเงิน(COD)'
               }
               updateOrTotal(connection,data)
-              agent.add("แจ้งที่อยู่พร้อมเบอร์โทรได้เลยค่ะ")
+            }else{
+              agent.add('Error')
             }
           }
         
@@ -710,7 +709,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
           }                                      
         });
         
-        return queryOrderDtDatabase(connection)
+        return queryOrderDatabase(connection)
         .then(result => {        
         date = {
           id : idVerify,
@@ -740,7 +739,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
             }
           }                                      
         });
-        return queryOrderDtDatabase(connection)
+        return queryOrderDatabase(connection)
         .then(result => {
           data = {
             id : idVerify,
@@ -771,7 +770,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
             }
           }                                      
         });
-        return queryOrderDtDatabase(connection)
+        return queryOrderDatabase(connection)
         .then(result => {
         console.log(req.body.queryResult.queryText)
         for(let a = 0 ; a < result.length; a++){
@@ -838,7 +837,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
             }
           }                                      
         });
-        return queryOrderDtDatabase(connection)
+        return queryOrderDatabase(connection)
           .then(result => {
             for (a = 0; a < result.length; a++){
               if(result[a].id == idVerify){
