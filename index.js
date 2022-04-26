@@ -14,7 +14,6 @@ const moment = require('moment');
 timedate = new Date();
 prodName = [];
 countProduct = 0;
-currentDate = '';
 tracking = 'ยังไม่มีพัสดุ';
 senderId = '';
 idProduct = '';
@@ -73,6 +72,8 @@ app.post('/chatbot', express.json(), (req, res)=>{
       });
     }
 
+
+
     function queryOrderDtDatabase(connection){
       return new Promise((resolve, reject) => {
         connection.query('SELECT * FROM ChatBotForSMEsDB.Order_detail' , (error, results, fields) => {
@@ -121,24 +122,6 @@ app.post('/chatbot', express.json(), (req, res)=>{
       });
     }
 
-    function updateProductCount(id,newQty){
-      const data = {
-        idProduct: id,
-        Product_Count: newQty,
-      };
-
-
-
-      
-      console.log(data)
-      return connectToDatabase()
-      .then(connection => {
-        return updateDatabase(connection, data)
-        .then(result => {
-          connection.end();
-        });
-      });
-    }
   
     async function product(agent){
     return connectToDatabase()
@@ -196,22 +179,23 @@ app.post('/chatbot', express.json(), (req, res)=>{
       } = agent.parameters;
       /*const connection = await connectToDatabase();
       const result_Order = insertIntoDatabase(connection, data);*/
-      
-      
-      return connectToDatabase()
-      .then(connection => {
       let check, plus ;
       let plus2 = false;
       let pdName = [];
       countProduct = number1; 
+      currentTime =  new Date().getTime(); 
+      data = {
+        Order_SenderID : req.body.originalDetectIntentRequest.payload.data.sender.id
+      }
+      
+      return connectToDatabase()
+      .then(connection => {
+        insertIntoDatabase(connection, data);
         for (let n = 0; n < producttype1.length ; n++){
           check = producttype1[n] == 'เห็ดหลินจือ';
           if(check == true)break;
         }
-        data = {
-          Order_SenderID : req.body.originalDetectIntentRequest.payload.data.sender.id
-        }
-        const result_Order =  insertIntoDatabase(connection, data);
+        
         console.log(data)
         connection.query('SELECT * FROM ChatBotForSMEsDB.Order' , (error, results, fields) => {
           for(let p = 0; p < results.length;p++){
@@ -219,6 +203,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
             if(req.body.originalDetectIntentRequest.payload.data.sender.id == results[p].id)this.count = results[p].id;
           }
         });
+        
         
         return queryDatabase(connection)
         .then(result => {
@@ -533,7 +518,6 @@ app.post('/chatbot', express.json(), (req, res)=>{
         .then(result => {
           for(let a = 0; a < result.length; a++){
             if(idVerify == result[a].fk_order_id){
-              console.log(idVerify);
               summaryQTY += result[a].od_qty
               name = ConvertIdToProduct(result[a].fk_product_id)
               totalCost += CostCalculate(name, result[a].od_qty);
@@ -635,6 +619,10 @@ app.post('/chatbot', express.json(), (req, res)=>{
 
     function DeliveryYes(agent){
       let idVerify = 0;
+      let updateQty = 0;
+      let qty = [];
+      let prodID = [];
+      let currentTime =  new Date().getTime(); 
       const imageUrl = 'https://media.discordapp.net/attachments/638022361454477322/965555830181220402/95510519_242757083597369_7226599770523959296_n.jpg?width=473&height=473'
       const anotherImage = new Image({
             imageUrl: imageUrl,
@@ -649,47 +637,75 @@ app.post('/chatbot', express.json(), (req, res)=>{
             }
           }                                      
         });
+
+        connection.query('SELECT * FROM ChatBotForSMEsDB.Order_detail' , (error, results, fields) => {
+            for(let m = 0; m < results.length;m++){
+              if(results[m].fk_order_id == idVerify){
+                qty.push(results[m].od_qty);
+                
+                prodID.push(results[m].fk_product_id);
+              }
+            }          
+        })
+
+        connection.query('SELECT * FROM ChatBotForSMEsDB.Product' , (error, results, fields) => {
+          for( let b = 0; b < prodID.length; b++){
+            for(let m = 0; m < results.length;m++){
+              if(prodID[b] == results[m].idProduct){
+                updateQty = results[m].Product_Count - qty[b];
+                console.log(updateQty)
+                data = {
+                  idProduct : prodID[b],
+                  Product_Count : updateQty
+                }
+                cutStock(connection,data);
+              }
+            }
+          }
+        })
         return queryOrderDatabase(connection)
         .then(result => {        
           for(let a = 0; a < result.length; a++){
-            if(result[a].Order_DeliveryType == 'Flash Express' && idVerify == result[p].id){
+            if(result[a].Order_DeliveryType == 'Flash Express' && idVerify == result[a].id){
               agent.add(anotherImage);
               agent.add("แจ้งสลิปพร้อมชื่อ - ที่อยู่ และเบอร์โทรนะคะ")
               data = {
                 id: idVerify,
                 Order_Status: 'ยังไม่ได้ชำระเงิน',
+                Order_Check : currentTime
               }
               updateOrTotal(connection,data)
               
-            }else if(result[a].Order_DeliveryType == 'Kerry' && idVerify == result[p].id){
+            }else if(result[a].Order_DeliveryType == 'Kerry' && idVerify == result[a].id){
               agent.add(anotherImage);
               agent.add("แจ้งสลิปพร้อมชื่อ - ที่อยู่ และเบอร์โทรนะคะ")
               data = {
                 id: idVerify,
                 Order_Status: 'ยังไม่ได้ชำระเงิน',
+                Order_Check : currentTime
               }
               updateOrTotal(connection,data)
-            }else if(result[a].Order_DeliveryType == 'Flash Express (COD)' && idVerify == result[p].id){
+            }else if(result[a].Order_DeliveryType == 'Flash Express (COD)' && idVerify == result[a].id){
               agent.add("แจ้งที่อยู่พร้อมเบอร์โทรได้เลยค่ะ")  
               data = {
                 id: idVerify,
                 Order_Status: 'ยังไม่ได้ชำระเงิน(COD)',
-                Order_Payment: 'ยังไม่ได้ชำระเงิน(COD)'
+                Order_Payment: 'ยังไม่ได้ชำระเงิน(COD)',
+                Order_Check : currentTime
               }
               updateOrTotal(connection,data)      
-            }else if(result[a].Order_DeliveryType == 'Kerry (COD)' && idVerify == result[p].id){
+            }else if(result[a].Order_DeliveryType == 'Kerry (COD)' && idVerify == result[a].id){
               agent.add("แจ้งที่อยู่พร้อมเบอร์โทรได้เลยค่ะ")
               data = {
                 id: idVerify,
                 Order_Status: 'ยังไม่ได้ชำระเงิน(COD)',
-                Order_Payment: 'ยังไม่ได้ชำระเงิน(COD)'
+                Order_Payment: 'ยังไม่ได้ชำระเงิน(COD)',
+                Order_Check : currentTime
               }
               updateOrTotal(connection,data)
-            }else{
-              agent.add('Error')
             }
           }
-        
+          
         connection.end();      
         })
       })
@@ -707,21 +723,28 @@ app.post('/chatbot', express.json(), (req, res)=>{
               idVerify = results[p].id;
             }
           }                                      
-        });
-        
+        });        
         return queryOrderDatabase(connection)
-        .then(result => {        
-        date = {
-          id : idVerify,
-          Order_Status: 'รอการตรวจสอบ',
-          Order_Payment : imageUrl
-        }   
-        updateOrTotal(connection,data);
-        agent.add("โปรดรอแอดมินตรวจสอบการชำระเงินสักครู่นะคะ ระหว่างนี้ส่งชื่อ - ที่อยู่ และเบอร์โทรมาให้แอดมินได้เลยค่ะ")
-        console.log(imageUrl);
+        .then(result => { 
+          for(let a = 0; a < result.length; a++){
+            if(idVerify == result[a].id){
+              if (result[a].Order_Check + 600000 <= new Date().getTime()){
+                console.log(result[a].Order_Check)
+                agent.add("โปรดรอแอดมินตรวจสอบการชำระเงินสักครู่นะคะ ระหว่างนี้ส่งชื่อ - ที่อยู่ และเบอร์โทรมาให้แอดมินได้เลยค่ะ")
+                data = {
+                  id : idVerify,
+                  Order_Status: 'รอการตรวจสอบ',
+                  Order_Payment : imageUrl
+                }   
+                updateOrTotal(connection,data)                
+              }else{
+              agent.add('หมดเวลาการทำรายการแล้วค่ะ โปรดสั่งซื้อใหม่อีกครั้ง')
+              }
+            }
+          }
         connection.end();
+        })
       })
-    })
     }
 
     function PaymentAddress(agent){ // ส่งชื่อที่อยู่ เบอร์โทรให้หลังจากจ่ายเงินแล้ว
@@ -730,6 +753,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
       } = agent.parameters;
       let idVerify = 0;
       let addressConvert = myTrim(address)
+      
       return connectToDatabase()
         .then(connection => {
         connection.query('SELECT * FROM ChatBotForSMEsDB.Order' , (error, results, fields) => {
@@ -745,7 +769,9 @@ app.post('/chatbot', express.json(), (req, res)=>{
             id : idVerify,
             Order_CusName : any,
             Order_CusAdd : addressConvert,
-            Order_CusTel : phoneNumber
+            Order_CusTel : phoneNumber,
+            Order_Other : req.body.queryResult.queryText,
+            Order_Date : moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
           }
           updateOrTotal(connection, data);
           console.log(any + " " + addressConvert + " " + phoneNumber )
@@ -760,7 +786,8 @@ app.post('/chatbot', express.json(), (req, res)=>{
       const {
         address, phoneNumber, any
       } = agent.parameters;
-      let addressConvert = myTrim(address)      
+      let addressConvert = myTrim(address)
+      let 
       return connectToDatabase()
         .then(connection => {
         connection.query('SELECT * FROM ChatBotForSMEsDB.Order' , (error, results, fields) => {
@@ -775,50 +802,72 @@ app.post('/chatbot', express.json(), (req, res)=>{
         console.log(req.body.queryResult.queryText)
         for(let a = 0 ; a < result.length; a++){
           if(result[a].Order_DeliveryType == 'Flash Express' && idVerify == result[a].id){
-            console.log(any + " " + addressConvert + " " + phoneNumber ) 
-            data = {
-              id : idVerify,
-              Order_CusName : any,
-              Order_CusAdd : addressConvert,
-              Order_CusTel : phoneNumber
+            if (result[a].Order_Check + 600000 <= new Date().getTime()){
+              console.log(any + " " + addressConvert + " " + phoneNumber ) 
+              data = {
+                id : idVerify,
+                Order_CusName : any,
+                Order_CusAdd : addressConvert,
+                Order_CusTel : phoneNumber,
+                Order_Other : req.body.queryResult.queryText
+              }
+              updateOrTotal(connection, data);    
+              agent.add("เป็นชื่อที่อยู่นี้นะคะ")
+            }else{
+              agent.add('หมดเวลาการทำรายการแล้วค่ะ โปรดสั่งซื้อใหม่อีกครั้ง')
             }
-            updateOrTotal(connection, data);    
-            agent.add("เป็นชื่อที่อยู่นี้นะคะ")
 
           }else if(result[a].Order_DeliveryType == 'Kerry' && idVerify == result[a].id){
-            console.log(any + " " + addressConvert + " " + phoneNumber )   
-            data = {
-              id : idVerify,
-              Order_CusName : any,
-              Order_CusAdd : addressConvert,
-              Order_CusTel : phoneNumber
+            if (result[a].Order_Check + 600000 <= new Date().getTime()){
+              console.log(any + " " + addressConvert + " " + phoneNumber )   
+              data = {
+                id : idVerify,
+                Order_CusName : any,
+                Order_CusAdd : addressConvert,
+                Order_CusTel : phoneNumber,
+                Order_Other : req.body.queryResult.queryText
+              }
+              updateOrTotal(connection, data);  
+              agent.add("เป็นชื่อที่อยู่นี้นะคะ")
+            }else{
+              agent.add('หมดเวลาการทำรายการแล้วค่ะ โปรดสั่งซื้อใหม่อีกครั้ง')
             }
-            updateOrTotal(connection, data);  
-            agent.add("เป็นชื่อที่อยู่นี้นะคะ")
 
           }else if(result[a].Order_DeliveryType == 'Flash Express (COD)' && idVerify == result[a].id){
+            if (result[a].Order_Check + 600000 <= new Date().getTime()){
             console.log(any + " " + addressConvert + " " + phoneNumber )  
             data = {
               id : idVerify,
               Order_CusName : any,
               Order_CusAdd : addressConvert,
-              Order_CusTel : phoneNumber
+              Order_CusTel : phoneNumber,
+              Order_Date : moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+              Order_Other : req.body.queryResult.queryText
             }
             updateOrTotal(connection, data);
             agent.add("ที่อยู่ " + req.body.queryResult.queryText +" นะคะ")
             agent.add("สินค้าจะส่งภายใน 1-2 วันนะคะ ส่งแล้วจะแปะเลขในนี้ ขอบคุณมากค่ะ") 
+          }else{
+            agent.add('หมดเวลาการทำรายการแล้วค่ะ โปรดสั่งซื้อใหม่อีกครั้ง')
+          }
 
           }else if(result[a].Order_DeliveryType == 'Kerry (COD)' && idVerify == result[a].id){
-            console.log(any + " " + addressConvert + " " + phoneNumber )
-            data = {
-              id : idVerify,
-              Order_CusName : any,
-              Order_CusAdd : addressConvert,
-              Order_CusTel : phoneNumber
+            if (result[a].Order_Check + 600000 <= new Date().getTime()){
+              console.log(any + " " + addressConvert + " " + phoneNumber )
+              data = {
+                id : idVerify,
+                Order_CusName : any,
+                Order_CusAdd : addressConvert,
+                Order_CusTel : phoneNumber,
+                Order_Date : moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                Order_Other : req.body.queryResult.queryText
+              }
+              updateOrTotal(connection, data);
+              agent.add("ที่อยู่ " + req.body.queryResult.queryText +" นะคะ")
+              agent.add("สินค้าจะส่งภายใน 1-2 วันนะคะ ส่งแล้วจะแปะเลขในนี้ ขอบคุณมากค่ะ") 
+            }else{
+              agent.add('หมดเวลาการทำรายการแล้วค่ะ โปรดสั่งซื้อใหม่อีกครั้ง')
             }
-            updateOrTotal(connection, data);
-            agent.add("ที่อยู่ " + req.body.queryResult.queryText +" นะคะ")
-            agent.add("สินค้าจะส่งภายใน 1-2 วันนะคะ ส่งแล้วจะแปะเลขในนี้ ขอบคุณมากค่ะ") 
           }
         }
         connection.end();
@@ -848,6 +897,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
             }
         data = {
           id : idVerify,
+          Order_Date : moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
           Order_Payment : imageUrl,
           Order_Status : 'รอการตรวจสอบ'
         }
@@ -918,27 +968,6 @@ app.post('/chatbot', express.json(), (req, res)=>{
         })
       })      
       }
-   
-    function clearOrder(){
-      prodName = [];
-      countProduct = 0;
-      totalCost = 0;
-      summaryQTY = 0;
-      delCost = 0;
-      deliveryType = '';
-      statusDel = '';
-      cusName = '';
-      cusAdd = '';
-      cusTel = '';
-      currentDate = '';
-      tracking = 'ยังไม่มีพัสดุ';
-      senderId = '';
-      idProduct = '';
-      orderPayment = '';
-      count = 0;
-      temp = '';
-      countString = '';
-    }
 
     var intentMap = new Map();
     intentMap.set('เรียกดูสินค้า',product)
