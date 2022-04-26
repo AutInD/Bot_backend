@@ -14,23 +14,12 @@ const moment = require('moment');
 timedate = new Date();
 prodName = [];
 countProduct = 0;
-deliveryType = '';
-statusDel = '';
-cusName = '';
-cusAdd = '';
-cusTel = '';
 currentDate = '';
 tracking = 'ยังไม่มีพัสดุ';
-addressTemp = '';
-phoneNumberTemp = '';
-givenNameTemp = '';
-lastNameTemp = '';
 senderId = '';
 idProduct = '';
-orderPayment = '';
 count = 0;
 count2 = 0;
-temp = '';
 
 process.env.DEBUG = 'dialogflow:debug'; // enables lib debugging statements
 
@@ -275,7 +264,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
                       od_qty: number1[b],
                     };  
                     console.log(count);
-                    
+                    insertIntoDatabase2(connection, data2);
                     console.log(data2);                
                 }else{
                   agent.add('ขอโทษค่ะ กรุณาสั่งใหม่')
@@ -286,7 +275,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
               }
             }
           }
-          insertIntoDatabase2(connection, data2);
+          
         }
         }else if(check == true && Flavormushroom != '' ){
           pdName = producttype1;
@@ -304,6 +293,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
                         fk_product_id: idProduct,
                         od_qty: number1[b]
                       };
+                      insertIntoDatabase2(connection, data2);
                     }      
                   else{
                     agent.add('ขอโทษค่ะ กรุณาสั่งใหม่')
@@ -315,7 +305,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
                           
               }
             }
-            insertIntoDatabase2(connection, data2);            
+                        
           }         
           }else{
           prodName = producttype1;
@@ -669,8 +659,6 @@ app.post('/chatbot', express.json(), (req, res)=>{
     }
 
     function DeliveryYes(agent){
-      statusDel = 'ยังไม่ได้ชำระเงิน(COD)';
-      orderPayment = 'ยังไม่ได้ชำระเงิน(COD)';
       let idVerify = 0;
       return connectToDatabase()
       .then(connection => {
@@ -683,28 +671,48 @@ app.post('/chatbot', express.json(), (req, res)=>{
         });
         return queryOrderDtDatabase(connection)
         .then(result => {
-        data = {
-          id: idVerify,
-          Order_Status: statusDel,
-          Order_Payment: orderPayment
-        }
-        updateOrTotal(connection,data)
         const imageUrl = 'https://media.discordapp.net/attachments/638022361454477322/965555830181220402/95510519_242757083597369_7226599770523959296_n.jpg?width=473&height=473'
         const anotherImage = new Image({
               imageUrl: imageUrl,
               platform: 'FACEBOOK'
           });
-        if(deliveryType == 'Flash Express'){
-          agent.add(anotherImage);
-          agent.add("แจ้งสลิปพร้อมชื่อ - ที่อยู่ และเบอร์โทรนะคะ")
-        }else if(deliveryType == 'Kerry'){
-          agent.add(anotherImage);
-          agent.add("แจ้งสลิปพร้อมชื่อ - ที่อยู่ และเบอร์โทรนะคะ")
-        }else if(deliveryType == 'Flash Express (COD)'){
-          agent.add("แจ้งที่อยู่พร้อมเบอร์โทรได้เลยค่ะ")        
-        }else if(deliveryType == 'Kerry (COD)'){
-          agent.add("แจ้งที่อยู่พร้อมเบอร์โทรได้เลยค่ะ")
-        }
+          for(let a = 0; a < result.length; a++){
+            if(result[a].Order_DeliveryType == 'Flash Express' && idVerify == result[p].id){
+              data = {
+                id: idVerify,
+                Order_Status: 'ยังไม่ได้ชำระเงิน',
+              }
+              updateOrTotal(connection,data)
+              agent.add(anotherImage);
+              agent.add("แจ้งสลิปพร้อมชื่อ - ที่อยู่ และเบอร์โทรนะคะ")
+              
+            }else if(result[a].Order_DeliveryType == 'Kerry' && idVerify == result[p].id){
+              data = {
+                id: idVerify,
+                Order_Status: 'ยังไม่ได้ชำระเงิน',
+              }
+              updateOrTotal(connection,data)
+              agent.add(anotherImage);
+              agent.add("แจ้งสลิปพร้อมชื่อ - ที่อยู่ และเบอร์โทรนะคะ")
+            }else if(result[a].Order_DeliveryType == 'Flash Express (COD)' && idVerify == result[p].id){
+              data = {
+                id: idVerify,
+                Order_Status: 'ยังไม่ได้ชำระเงิน(COD)',
+                Order_Payment: 'ยังไม่ได้ชำระเงิน(COD)'
+              }
+              updateOrTotal(connection,data)
+              agent.add("แจ้งที่อยู่พร้อมเบอร์โทรได้เลยค่ะ")        
+            }else if(result[a].Order_DeliveryType == 'Kerry (COD)' && idVerify == result[p].id){
+              data = {
+                id: idVerify,
+                Order_Status: 'ยังไม่ได้ชำระเงิน(COD)',
+                Order_Payment: 'ยังไม่ได้ชำระเงิน(COD)'
+              }
+              updateOrTotal(connection,data)
+              agent.add("แจ้งที่อยู่พร้อมเบอร์โทรได้เลยค่ะ")
+            }
+          }
+        
         connection.end();      
         })
       })
@@ -712,82 +720,170 @@ app.post('/chatbot', express.json(), (req, res)=>{
 
 
     function Payment(agent){ // ส่งสลิปจ่ายเงินก่อน
-        const imageUrl = agent.request_.body.originalDetectIntentRequest.payload.data.message.attachments[0].payload.url;
+      let idVerify = 0;
+      const imageUrl = agent.request_.body.originalDetectIntentRequest.payload.data.message.attachments[0].payload.url;
+      return connectToDatabase()
+      .then(connection => {
+        connection.query('SELECT * FROM ChatBotForSMEsDB.Order' , (error, results, fields) => {
+          for(let p = 0; p < results.length;p++){
+            if(req.body.originalDetectIntentRequest.payload.data.sender.id == results[p].Order_SenderID && results[p].Order_Date == undefined){
+              idVerify = results[p].id;
+            }
+          }                                      
+        });
+        
+        return queryOrderDtDatabase(connection)
+        .then(result => {        
+        date = {
+          id : idVerify,
+          Order_Status: 'รอการตรวจสอบ',
+          Order_Payment : imageUrl
+        }   
+        updateOrTotal(connection,data);
         agent.add("โปรดรอแอดมินตรวจสอบการชำระเงินสักครู่นะคะ ระหว่างนี้ส่งชื่อ - ที่อยู่ และเบอร์โทรมาให้แอดมินได้เลยค่ะ")
         console.log(imageUrl);
-        statusDel = "รอการตรวจสอบ"
-        orderPayment = imageUrl;
+        connection.end();
+      })
+    })
     }
 
     function PaymentAddress(agent){ // ส่งชื่อที่อยู่ เบอร์โทรให้หลังจากจ่ายเงินแล้ว
-        const {
-          address, phoneNumber, any
-        } = agent.parameters;
-        addressTemp = address;
-        phoneNumberTemp = phoneNumber;
-        cusName = any;
-        console.log(cusName + " " + addressTemp + " " + phoneNumberTemp )
-        agent.add("สั่ง " + prodName + " " + countProduct + " ชุด โดยบริการขนส่ง " + deliveryType + " ส่งที่คุณ " + req.body.queryResult.queryText +" นะคะ")
-        agent.add("ถ้าแอดมินยืนยันการชำระเงินแล้ว สินค้าจะส่งภายใน 1-2 วันนะคะ ส่งแล้วจะแปะเลขในนี้ ขอบคุณมากค่ะ")
-        
+      const {
+        address, phoneNumber, any
+      } = agent.parameters;
+      let idVerify = 0;
+      let addressConvert = myTrim(address)
+      return connectToDatabase()
+        .then(connection => {
+        connection.query('SELECT * FROM ChatBotForSMEsDB.Order' , (error, results, fields) => {
+          for(let p = 0; p < results.length;p++){
+            if(req.body.originalDetectIntentRequest.payload.data.sender.id == results[p].Order_SenderID && results[p].Order_Date == undefined){
+              idVerify = results[p].id;
+            }
+          }                                      
+        });
+        return queryOrderDtDatabase(connection)
+        .then(result => {
+          data = {
+            id : idVerify,
+            Order_CusName : any,
+            Order_CusAdd : addressConvert,
+            Order_CusTel : phoneNumber
+          }
+          updateOrTotal(connection, data);
+          console.log(any + " " + addressConvert + " " + phoneNumber )
+          agent.add("บริการขนส่ง " + deliveryType + " ส่งที่คุณ " + req.body.queryResult.queryText +" นะคะ")
+          agent.add("ถ้าแอดมินยืนยันการชำระเงินแล้ว สินค้าจะส่งภายใน 1-2 วันนะคะ ส่งแล้วจะแปะเลขในนี้ ขอบคุณมากค่ะ")
+          connection.end();
+        })
+      })
     }
 
     function GetAddress(agent){ // รับที่อยู่ก่อน
       const {
         address, phoneNumber, any
       } = agent.parameters;
-        addressTemp = address;
-        phoneNumberTemp = phoneNumber;
-        cusName = any;
+      let addressConvert = myTrim(address)      
+      return connectToDatabase()
+        .then(connection => {
+        connection.query('SELECT * FROM ChatBotForSMEsDB.Order' , (error, results, fields) => {
+          for(let p = 0; p < results.length;p++){
+            if(req.body.originalDetectIntentRequest.payload.data.sender.id == results[p].Order_SenderID && results[p].Order_Date == undefined){
+              idVerify = results[p].id;
+            }
+          }                                      
+        });
+        return queryOrderDtDatabase(connection)
+        .then(result => {
         console.log(req.body.queryResult.queryText)
-        if(deliveryType == 'Flash Express'){
-          console.log(cusName + " " + addressTemp + " " + phoneNumberTemp )     
-          agent.add("เป็นชื่อที่อยู่นี้นะคะ")
+        for(let a = 0 ; a < result.length; a++){
+          if(result[a].Order_DeliveryType == 'Flash Express' && idVerify == result[a].id){
+            console.log(any + " " + addressConvert + " " + phoneNumber ) 
+            data = {
+              id : idVerify,
+              Order_CusName : any,
+              Order_CusAdd : addressConvert,
+              Order_CusTel : phoneNumber
+            }
+            updateOrTotal(connection, data);    
+            agent.add("เป็นชื่อที่อยู่นี้นะคะ")
 
-        }else if(deliveryType == 'Kerry'){
-          console.log(cusName + " " + addressTemp + " " + phoneNumberTemp )     
-          agent.add("เป็นชื่อที่อยู่นี้นะคะ")
+          }else if(result[a].Order_DeliveryType == 'Kerry' && idVerify == result[a].id){
+            console.log(any + " " + addressConvert + " " + phoneNumber )   
+            data = {
+              id : idVerify,
+              Order_CusName : any,
+              Order_CusAdd : addressConvert,
+              Order_CusTel : phoneNumber
+            }
+            updateOrTotal(connection, data);  
+            agent.add("เป็นชื่อที่อยู่นี้นะคะ")
 
-        }else if(deliveryType == 'Flash Express (COD)'){
-          console.log(any + " " + address + " " + phoneNumber )
-          agent.add("ที่อยู่" + " " + req.body.queryResult.queryText +" นะคะ")
-          agent.add("สินค้าจะส่งภายใน 1-2 วันนะคะ ส่งแล้วจะแปะเลขในนี้ ขอบคุณมากค่ะ") 
+          }else if(result[a].Order_DeliveryType == 'Flash Express (COD)' && idVerify == result[a].id){
+            console.log(any + " " + addressConvert + " " + phoneNumber )  
+            data = {
+              id : idVerify,
+              Order_CusName : any,
+              Order_CusAdd : addressConvert,
+              Order_CusTel : phoneNumber
+            }
+            updateOrTotal(connection, data);
+            agent.add("ที่อยู่ " + req.body.queryResult.queryText +" นะคะ")
+            agent.add("สินค้าจะส่งภายใน 1-2 วันนะคะ ส่งแล้วจะแปะเลขในนี้ ขอบคุณมากค่ะ") 
 
-        }else if(deliveryType == 'Kerry (COD)'){
-          console.log(any + " " + address + " " + phoneNumber )
-          agent.add("ที่อยู่" +  " " + req.body.queryResult.queryText +" นะคะ")
-          agent.add("สินค้าจะส่งภายใน 1-2 วันนะคะ ส่งแล้วจะแปะเลขในนี้ ขอบคุณมากค่ะ") 
+          }else if(result[a].Order_DeliveryType == 'Kerry (COD)' && idVerify == result[a].id){
+            console.log(any + " " + addressConvert + " " + phoneNumber )
+            data = {
+              id : idVerify,
+              Order_CusName : any,
+              Order_CusAdd : addressConvert,
+              Order_CusTel : phoneNumber
+            }
+            updateOrTotal(connection, data);
+            agent.add("ที่อยู่ " + req.body.queryResult.queryText +" นะคะ")
+            agent.add("สินค้าจะส่งภายใน 1-2 วันนะคะ ส่งแล้วจะแปะเลขในนี้ ขอบคุณมากค่ะ") 
+          }
         }
+        connection.end();
+      })
+    })
     }
 
     function AddressPayment(agent){ // จ่ายเงินหลังจากส่งชื่อที่อยู่ เบอร์โทร
-      const imageUrl = agent.request_.body.originalDetectIntentRequest.payload.data.message.attachments[0].payload.url;
-      agent.add("สั่ง " + prodName + " " + countProduct + " ชุด เป็นเงิน "+ totalCost +" บาท โดยบริการขนส่ง " + deliveryType + " ที่อยู่ " + cusName + " " + addressTemp + " " + phoneNumberTemp  +" นะคะ")
-      agent.add("ถ้าแอดมินยืนยันการชำระเงินแล้ว สินค้าจะส่งภายใน 1-2 วันนะคะ ส่งแล้วจะแปะเลขในนี้ ขอบคุณมากค่ะ")    
-      console.log(imageUrl);
-      orderPayment = imageUrl;
-      statusDel = 'รอการตรวจสอบ';
+      const imageUrl = agent.request_.body.originalDetectIntentRequest.payload.data.message.attachments[0].payload.url;       
+      return connectToDatabase()
+        .then(connection => {
+        connection.query('SELECT * FROM ChatBotForSMEsDB.Order' , (error, results, fields) => {
+          for(let p = 0; p < results.length;p++){
+            if(req.body.originalDetectIntentRequest.payload.data.sender.id == results[p].Order_SenderID && results[p].Order_Date == undefined){
+              idVerify = results[p].id;
+            }
+          }                                      
+        });
+        return queryOrderDtDatabase(connection)
+          .then(result => {
+            for (a = 0; a < result.length; a++){
+              if(result[a].id == idVerify){
+                agent.add(" ที่อยู่ " + result[a].Order_CusName + " " + result[a].Order_CusAdd + " " + result[a].Order_CusTel  +" นะคะ")
+                agent.add("ถ้าแอดมินยืนยันการชำระเงินแล้วจะแจ้งนะคะ สินค้าจะส่งภายใน 1-2 วันนะคะ ส่งแล้วจะแปะเลขในนี้ ขอบคุณมากค่ะ")    
+                console.log(imageUrl);
+              }
+            }
+        data = {
+          id : idVerify,
+          Order_Payment : imageUrl,
+          Order_Status : 'รอการตรวจสอบ'
+        }
+        updateOrTotal(connection, data);
+        
+        connection.end();
+          })
+        })
     }
 
     function myTrim(x) {
       return x.replace(',');
     }
-
-  function getProdId(){
-    return connectToDatabase()
-        .then(connection => {
-          return queryOrderDatabase(connection)
-          .then(result2 => {
-            for(let n = 0; n <= result2.length; ++n){
-              if(result2[n].Order_SenderID == req.body.originalDetectIntentRequest.payload.data.sender.id && result2[n].Order_Date == null){
-                a = (result2[n].id);   
-                this.count = a;      
-              }
-            }             
-          connection.end();
-        })
-      })
-  }
 
     async function WriteOrder(agent){  
       addressTemp = myTrim(addressTemp);
@@ -859,10 +955,6 @@ app.post('/chatbot', express.json(), (req, res)=>{
       cusTel = '';
       currentDate = '';
       tracking = 'ยังไม่มีพัสดุ';
-      addressTemp = '';
-      phoneNumberTemp = '';
-      givenNameTemp = '';
-      lastNameTemp = '';
       senderId = '';
       idProduct = '';
       orderPayment = '';
