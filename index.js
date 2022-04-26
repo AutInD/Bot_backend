@@ -131,7 +131,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
         //console.log(result);
         result.map(user => {          
             const card = new Card(`${user.Product_Name} ราคา: ${user.Product_Cost}`);
-            card.setImage(`https://apigreenneplus.herokuapp.com/${user.Product_Picture}`);
+            card.setImage(`https://api-webapp-greenneplus.herokuapp.com/${user.Product_Picture}`);
             card.setText(`${user.Product_Detail}`);
             card.setButton({text: `สั่ง`+user.Product_Name, url:`${user.Product_Name}`});
             agent.add(card);           
@@ -153,14 +153,14 @@ app.post('/chatbot', express.json(), (req, res)=>{
           for(let n = 0; n < result.length;n++){
             if(producttype == `${result[n].Product_Name}`){
               const card = new Card(`${result[n].Product_Name} ราคา: ${result[n].Product_Cost}`);
-              card.setImage(`https://apigreenneplus.herokuapp.com/${result[n].Product_Picture}`);
+              card.setImage(`https://api-webapp-greenneplus.herokuapp.com/${result[n].Product_Picture}`);
               card.setText(`${result[n].Product_Detail}`);
               card.setButton({text: `สั่ง`+result[n].Product_Name, url:`${result[n].Product_Name}`});
               agent.add(card);
               }
             else if(producttype == 'เห็ดหลินจือ'){
               const card2 = new Card(`${result[0].Product_Name} ราคา: ${result[0].Product_Cost}`);
-              card2.setImage(`https://apigreenneplus.herokuapp.com/${result[0].Product_Picture}`);
+              card2.setImage(`https://api-webapp-greenneplus.herokuapp.com/${result[0].Product_Picture}`);
               card2.setText(`${result[0].Product_Detail}`);
               card2.setButton({text: `สั่งเห็ดหลินจือ`, url:`สั่งเห็ดหลินจือ`});
               agent.add(card2);
@@ -185,7 +185,8 @@ app.post('/chatbot', express.json(), (req, res)=>{
       countProduct = number1; 
       currentTime =  new Date().getTime(); 
       data = {
-        Order_SenderID : req.body.originalDetectIntentRequest.payload.data.sender.id
+        Order_SenderID : req.body.originalDetectIntentRequest.payload.data.sender.id,
+        Order_Tracking : 'ยังไม่มีพัสดุ'
       }
       
       return connectToDatabase()
@@ -203,11 +204,9 @@ app.post('/chatbot', express.json(), (req, res)=>{
             if(req.body.originalDetectIntentRequest.payload.data.sender.id == results[p].id)this.count = results[p].id;
           }
         });
-        
-        
+
         return queryDatabase(connection)
         .then(result => {
-
       //หาเห็ดหลินจือ 
       if(check == false){
         for(let b = 0; b < producttype1.length;++b){
@@ -622,7 +621,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
       let updateQty = 0;
       let qty = [];
       let prodID = [];
-      let currentTime =  new Date().getTime(); 
+      let currentTime =  new Date().getTime();
       const imageUrl = 'https://media.discordapp.net/attachments/638022361454477322/965555830181220402/95510519_242757083597369_7226599770523959296_n.jpg?width=473&height=473'
       const anotherImage = new Image({
             imageUrl: imageUrl,
@@ -714,6 +713,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
 
     function Payment(agent){ // ส่งสลิปจ่ายเงินก่อน
       let idVerify = 0;
+      let timeCount = 0;
       const imageUrl = agent.request_.body.originalDetectIntentRequest.payload.data.message.attachments[0].payload.url;
       return connectToDatabase()
       .then(connection => {
@@ -728,8 +728,9 @@ app.post('/chatbot', express.json(), (req, res)=>{
         .then(result => { 
           for(let a = 0; a < result.length; a++){
             if(idVerify == result[a].id){
-              if (result[a].Order_Check + 600000 <= new Date().getTime()){
-                console.log(result[a].Order_Check)
+              timeCount = parseInt(result[a].Order_Check);
+              timeCount += 600000
+              if (new Date().getTime() <= timeCount){
                 agent.add("โปรดรอแอดมินตรวจสอบการชำระเงินสักครู่นะคะ ระหว่างนี้ส่งชื่อ - ที่อยู่ และเบอร์โทรมาให้แอดมินได้เลยค่ะ")
                 data = {
                   id : idVerify,
@@ -787,7 +788,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
         address, phoneNumber, any
       } = agent.parameters;
       let addressConvert = myTrim(address)
-      let 
+      let timeCount = 0;
       return connectToDatabase()
         .then(connection => {
         connection.query('SELECT * FROM ChatBotForSMEsDB.Order' , (error, results, fields) => {
@@ -799,10 +800,11 @@ app.post('/chatbot', express.json(), (req, res)=>{
         });
         return queryOrderDatabase(connection)
         .then(result => {
-        console.log(req.body.queryResult.queryText)
         for(let a = 0 ; a < result.length; a++){
           if(result[a].Order_DeliveryType == 'Flash Express' && idVerify == result[a].id){
-            if (result[a].Order_Check + 600000 <= new Date().getTime()){
+            timeCount = parseInt(result[a].Order_Check);
+            timeCount += 600000
+            if (new Date().getTime() < timeCount + 600000){
               console.log(any + " " + addressConvert + " " + phoneNumber ) 
               data = {
                 id : idVerify,
@@ -818,7 +820,9 @@ app.post('/chatbot', express.json(), (req, res)=>{
             }
 
           }else if(result[a].Order_DeliveryType == 'Kerry' && idVerify == result[a].id){
-            if (result[a].Order_Check + 600000 <= new Date().getTime()){
+            timeCount = parseInt(result[a].Order_Check);
+            timeCount += 600000
+            if (new Date().getTime() < timeCount + 600000){
               console.log(any + " " + addressConvert + " " + phoneNumber )   
               data = {
                 id : idVerify,
@@ -834,7 +838,9 @@ app.post('/chatbot', express.json(), (req, res)=>{
             }
 
           }else if(result[a].Order_DeliveryType == 'Flash Express (COD)' && idVerify == result[a].id){
-            if (result[a].Order_Check + 600000 <= new Date().getTime()){
+            timeCount = parseInt(result[a].Order_Check);
+            timeCount += 600000
+            if (new Date().getTime() < timeCount + 600000){
             console.log(any + " " + addressConvert + " " + phoneNumber )  
             data = {
               id : idVerify,
@@ -852,7 +858,9 @@ app.post('/chatbot', express.json(), (req, res)=>{
           }
 
           }else if(result[a].Order_DeliveryType == 'Kerry (COD)' && idVerify == result[a].id){
-            if (result[a].Order_Check + 600000 <= new Date().getTime()){
+            timeCount = parseInt(result[a].Order_Check);
+            timeCount += 600000
+            if (new Date().getTime() < timeCount + 600000){
               console.log(any + " " + addressConvert + " " + phoneNumber )
               data = {
                 id : idVerify,
