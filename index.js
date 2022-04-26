@@ -164,7 +164,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
               card2.setText(`${result[0].Product_Detail}`);
               card2.setButton({text: `สั่งเห็ดหลินจือ`, url:`สั่งเห็ดหลินจือ`});
               agent.add(card2);
-              agent.add('เห็ดหลินจือมีสองสูตร สูตรดั้งเดิมและสูตรเข้มข้น\nสูตรเข้มข้นจะขมพอทานได้และสูตรดั้งเดิมจะขมปานกลางค่ะ U+1F198')
+              agent.add('เห็ดหลินจือมีสองสูตร สูตรดั้งเดิมและสูตรเข้มข้น\nสูตรเข้มข้นจะขมพอทานได้และสูตรดั้งเดิมจะขมปานกลางค่ะ')
             }
           }
           connection.end();
@@ -920,63 +920,26 @@ app.post('/chatbot', express.json(), (req, res)=>{
       return x.replace(',');
     }
 
-    async function WriteOrder(agent){  
-      addressTemp = myTrim(addressTemp);
-      let updateQty = 0;
-      getProdId();
-      currentDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
-      var data = {
-        Order_Date: currentDate,
-        Order_DeliveryType: deliveryType,
-        Order_Status: statusDel,
-        Order_CusName: cusName,
-        Order_CusTel: phoneNumberTemp,
-        Order_CusAdd: addressTemp,
-        Order_Tracking: tracking,
-        Order_SenderID: senderId,
-        Order_Payment: orderPayment,
-        Order_TotalCost: totalCost
-      }; 
-      const connection = await connectToDatabase();
-      const result_Order = await insertIntoDatabase(connection, data);
+    function callAdmin (){
+      const admin = [
+          {
+          "sender":{
+             "id":"4252775964777677"
+          },
+          "recipient":{
+             "id": req.body.originalDetectIntentRequest.payload.data.sender.id
+          },
+          "timestamp":req.body.originalDetectIntentRequest.payload.data.timestamp,
+          "request_thread_control":{
+             "requested_owner_app_id":"578496233337521",
+             "metadata":"additional content that the caller wants to set"
+          } 
+       }  
+      ]
+      res.json(admin)
+    }
       
-      count +=1
-      console.log(count)
-      for (let a = 0; a < prodName.length ; a++){
-        idProduct = CompareProduct(prodName[a])       
-      var data2 = {
-        fk_order_id: count,
-        fk_product_id: idProduct,
-        od_qty: countProduct[a],
-        od_total: totalCost
-      };  
-
-      console.log(count);
-      const result_detail = await insertIntoDatabase2(connection, data2);
-      }      
-      connection.end();
-
-      return connectToDatabase()
-      .then(connection => {
-        return queryDatabase(connection)
-        .then(result => {
-
-          for( let b = 0; b < prodName.length; b++){
-            for(let m = 0; m < result.length;m++){
-              if(prodName[b] == result[m].Product_Name){
-                updateQty = result[m].Product_Count - countProduct[b];
-                console.log(updateQty)
-                updateProductCount(result[m].idProduct,updateQty);
-              }
-            }
-          }
-          connection.end();
-          clearOrder();
-          agent.add(`เก็บเรียบร้อย`);
-        })
-      })      
-      }
-
+      
     var intentMap = new Map();
     intentMap.set('เรียกดูสินค้า',product)
     intentMap.set('OrderIn', WriteOrder)
@@ -989,5 +952,6 @@ app.post('/chatbot', express.json(), (req, res)=>{
     intentMap.set('DeliveryChoose - yes', DeliveryYes)
     intentMap.set('Address', GetAddress)
     intentMap.set('Address - custom', AddressPayment)
+    intentMap.set('เรียกแอดมิน', callAdmin)
     agent.handleRequest(intentMap);
 });
