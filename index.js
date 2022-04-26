@@ -190,28 +190,6 @@ app.post('/chatbot', express.json(), (req, res)=>{
       });
     }
 
-    async function demo(agent){ 
-      const user_email = agent.parameters.Product;
-    return connectToDatabase()
-    .then(connection => {
-      return queryDatabase(connection)
-      .then(result => {
-        //console.log(result);
-        result.map(user => {
-          const payload = {
-            key: 'value',
-            key2: 2
-          };
-          
-          agent.add(
-            new WebhookClient(agent.UNSPECIFIED, payload, {rawPayload: true, sendAsMessage: true})
-          );
-        });        
-        connection.end();
-      });
-    });
-    }
-
     function Order(agent){      
       const {
         producttype1, number1, Flavormushroom    
@@ -660,6 +638,11 @@ app.post('/chatbot', express.json(), (req, res)=>{
 
     function DeliveryYes(agent){
       let idVerify = 0;
+      const imageUrl = 'https://media.discordapp.net/attachments/638022361454477322/965555830181220402/95510519_242757083597369_7226599770523959296_n.jpg?width=473&height=473'
+        const anotherImage = new Image({
+              imageUrl: imageUrl,
+              platform: 'FACEBOOK'
+      });
       return connectToDatabase()
       .then(connection => {
         connection.query('SELECT * FROM ChatBotForSMEsDB.Order' , (error, results, fields) => {
@@ -670,12 +653,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
           }                                      
         });
         return queryOrderDtDatabase(connection)
-        .then(result => {
-        const imageUrl = 'https://media.discordapp.net/attachments/638022361454477322/965555830181220402/95510519_242757083597369_7226599770523959296_n.jpg?width=473&height=473'
-        const anotherImage = new Image({
-              imageUrl: imageUrl,
-              platform: 'FACEBOOK'
-          });
+        .then(result => {        
           for(let a = 0; a < result.length; a++){
             if(result[a].Order_DeliveryType == 'Flash Express' && idVerify == result[p].id){
               data = {
