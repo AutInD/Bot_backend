@@ -182,11 +182,13 @@ app.post('/chatbot', express.json(), (req, res)=>{
       let check, plus ;
       let plus2 = false;
       let pdName = [];
+      let timeCount = 0;
       countProduct = number1; 
       currentTime =  new Date().getTime(); 
       data = {
         Order_SenderID : req.body.originalDetectIntentRequest.payload.data.sender.id,
-        Order_Tracking : 'ยังไม่มีพัสดุ'
+        Order_Tracking : 'ยังไม่มีพัสดุ',
+        Order_Check : timeCount
       }
       return connectToDatabase()
       .then(connection => {
@@ -620,7 +622,6 @@ app.post('/chatbot', express.json(), (req, res)=>{
       let updateQty = 0;
       let qty = [];
       let prodID = [];
-      let currentTime =  new Date().getTime();
       const imageUrl = 'https://media.discordapp.net/attachments/638022361454477322/965555830181220402/95510519_242757083597369_7226599770523959296_n.jpg?width=473&height=473'
       const anotherImage = new Image({
             imageUrl: imageUrl,
@@ -670,7 +671,6 @@ app.post('/chatbot', express.json(), (req, res)=>{
               data = {
                 id: idVerify,
                 Order_Status: 'ยังไม่ได้ชำระเงิน',
-                Order_Check : currentTime
               }
               updateOrTotal(connection,data)
               
@@ -680,7 +680,6 @@ app.post('/chatbot', express.json(), (req, res)=>{
               data = {
                 id: idVerify,
                 Order_Status: 'ยังไม่ได้ชำระเงิน',
-                Order_Check : currentTime
               }
               updateOrTotal(connection,data)
             }else if(result[a].Order_DeliveryType == 'Flash Express (COD)' && idVerify == result[a].id){
@@ -689,7 +688,6 @@ app.post('/chatbot', express.json(), (req, res)=>{
                 id: idVerify,
                 Order_Status: 'ยังไม่ได้ชำระเงิน(COD)',
                 Order_Payment: 'ยังไม่ได้ชำระเงิน(COD)',
-                Order_Check : currentTime
               }
               updateOrTotal(connection,data)      
             }else if(result[a].Order_DeliveryType == 'Kerry (COD)' && idVerify == result[a].id){
@@ -698,7 +696,6 @@ app.post('/chatbot', express.json(), (req, res)=>{
                 id: idVerify,
                 Order_Status: 'ยังไม่ได้ชำระเงิน(COD)',
                 Order_Payment: 'ยังไม่ได้ชำระเงิน(COD)',
-                Order_Check : currentTime
               }
               updateOrTotal(connection,data)
             }
@@ -728,7 +725,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
           for(let a = 0; a < result.length; a++){
             if(idVerify == result[a].id){
               timeCount = parseInt(result[a].Order_Check);
-              timeCount += 600000
+              timeCount += 3600000
               if (new Date().getTime() <= timeCount){
                 agent.add("โปรดรอแอดมินตรวจสอบการชำระเงินสักครู่นะคะ ระหว่างนี้ส่งชื่อ - ที่อยู่ และเบอร์โทรมาให้แอดมินได้เลยค่ะ")
                 data = {
@@ -802,8 +799,8 @@ app.post('/chatbot', express.json(), (req, res)=>{
         for(let a = 0 ; a < result.length; a++){
           if(result[a].Order_DeliveryType == 'Flash Express' && idVerify == result[a].id){
             timeCount = parseInt(result[a].Order_Check);
-            timeCount += 600000
-            if (new Date().getTime() < timeCount + 600000){
+            timeCount += 3600000
+            if (new Date().getTime() < timeCount){
               console.log(any + " " + addressConvert + " " + phoneNumber ) 
               data = {
                 id : idVerify,
@@ -820,8 +817,8 @@ app.post('/chatbot', express.json(), (req, res)=>{
 
           }else if(result[a].Order_DeliveryType == 'Kerry' && idVerify == result[a].id){
             timeCount = parseInt(result[a].Order_Check);
-            timeCount += 600000
-            if (new Date().getTime() < timeCount + 600000){
+            timeCount += 3600000
+            if (new Date().getTime() < timeCount){
               console.log(any + " " + addressConvert + " " + phoneNumber )   
               data = {
                 id : idVerify,
@@ -838,8 +835,8 @@ app.post('/chatbot', express.json(), (req, res)=>{
 
           }else if(result[a].Order_DeliveryType == 'Flash Express (COD)' && idVerify == result[a].id){
             timeCount = parseInt(result[a].Order_Check);
-            timeCount += 600000
-            if (new Date().getTime() < timeCount + 600000){
+            timeCount += 3600000
+            if (new Date().getTime() < timeCount){
             console.log(any + " " + addressConvert + " " + phoneNumber )  
             data = {
               id : idVerify,
@@ -858,8 +855,8 @@ app.post('/chatbot', express.json(), (req, res)=>{
 
           }else if(result[a].Order_DeliveryType == 'Kerry (COD)' && idVerify == result[a].id){
             timeCount = parseInt(result[a].Order_Check);
-            timeCount += 600000
-            if (new Date().getTime() < timeCount + 600000){
+            timeCount += 3600000
+            if (new Date().getTime() < timeCount){
               console.log(any + " " + addressConvert + " " + phoneNumber )
               data = {
                 id : idVerify,
