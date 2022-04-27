@@ -173,7 +173,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
       });
     }
 
-    function Order(agent){      
+    async function Order(agent){      
       const {
         producttype1, number1, Flavormushroom    
       } = agent.parameters;
