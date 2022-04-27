@@ -123,7 +123,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
     }
 
   
-    async function product(agent){
+    function product(agent){
     return connectToDatabase()
     .then(connection => {
       return queryDatabase(connection)
@@ -142,7 +142,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
     });
     }
 
-    async function properties(agent){
+    function properties(agent){
       const {
         producttype
       } = agent.parameters;
@@ -173,7 +173,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
       });
     }
 
-    async function Order(agent){      
+    function Order(agent){      
       const {
         producttype1, number1, Flavormushroom    
       } = agent.parameters;
@@ -188,7 +188,6 @@ app.post('/chatbot', express.json(), (req, res)=>{
         Order_SenderID : req.body.originalDetectIntentRequest.payload.data.sender.id,
         Order_Tracking : 'ยังไม่มีพัสดุ'
       }
-      
       return connectToDatabase()
       .then(connection => {
         insertIntoDatabase(connection, data);
@@ -223,7 +222,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
                       od_qty: number1[b],
                     };  
                     console.log(count);
-                    await insertIntoDatabase2(connection, data2);
+                    insertIntoDatabase2(connection, data2);
                     console.log(data2);                
                 }else{
                   agent.add('ขอโทษค่ะ กรุณาสั่งใหม่')
@@ -942,7 +941,6 @@ app.post('/chatbot', express.json(), (req, res)=>{
       
     var intentMap = new Map();
     intentMap.set('เรียกดูสินค้า',product)
-    intentMap.set('OrderIn', WriteOrder)
     intentMap.set('properties', properties)
     intentMap.set('สั่งสินค้า', Order)
     intentMap.set('สั่งสินค้า - custom', Order2)
