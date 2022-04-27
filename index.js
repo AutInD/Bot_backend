@@ -223,7 +223,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
                       od_qty: number1[b],
                     };  
                     console.log(count);
-                    insertIntoDatabase2(connection, data2);
+                    await insertIntoDatabase2(connection, data2);
                     console.log(data2);                
                 }else{
                   agent.add('ขอโทษค่ะ กรุณาสั่งใหม่')
