@@ -818,6 +818,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
           }else if(result[a].Order_DeliveryType == 'Kerry' && idVerify == result[a].id){
             timeCount = parseInt(result[a].Order_Check);
             timeCount += 3600000
+            console.log(timeCount)
             if (new Date().getTime() < timeCount){
               console.log(any + " " + addressConvert + " " + phoneNumber )   
               data = {
