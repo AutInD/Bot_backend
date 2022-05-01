@@ -11,6 +11,7 @@ const {Suggestion} = require('dialogflow-fulfillment');
 const {Payload} = require('dialogflow-fulfillment');
 const { DateTime } = require('actions-on-google');
 const moment = require('moment');
+const { result } = require('lodash');
 timedate = new Date();
 prodName = [];
 countProduct = 0;
@@ -122,6 +123,23 @@ app.post('/chatbot', express.json(), (req, res)=>{
       });
     }
 
+
+    function deleteOrder(connection, id){
+      return new Promise((resolve, reject) => {
+        connection.query(`DELETE from ChatBotForSMEsDB.Order WHERE id = ?`, id, (error, results, fields) => {
+          resolve(results);
+        });
+      });
+    }
+
+    function deleteOrderDetail(connection, id){
+      return new Promise((resolve, reject) => {
+        connection.query(`DELETE from ChatBotForSMEsDB.Order_detail WHERE idOrder_detail = ?`, id, (error, results, fields) => {
+          resolve(results);
+        });
+      });
+    }
+
   
     function product(agent){
     return connectToDatabase()
@@ -177,18 +195,15 @@ app.post('/chatbot', express.json(), (req, res)=>{
       const {
         producttype1, number1, Flavormushroom    
       } = agent.parameters;
-      /*const connection = await connectToDatabase();
-      const result_Order = insertIntoDatabase(connection, data);*/
       let check, plus ;
       let plus2 = false;
       let pdName = [];
-      let timeCount = 0;
       countProduct = number1; 
-      currentTime =  new Date().getTime(); 
+      let currentTime =  new Date().getTime(); 
       data = {
         Order_SenderID : req.body.originalDetectIntentRequest.payload.data.sender.id,
         Order_Tracking : 'ยังไม่มีพัสดุ',
-        Order_Check : timeCount
+        Order_Check : currentTime
       }
       return connectToDatabase()
       .then(connection => {
@@ -231,7 +246,10 @@ app.post('/chatbot', express.json(), (req, res)=>{
                 }
               }else{
                 agent.add('ขอโทษด้วยนะคะ ' + producttype1[b] + ' เหลืออยู่ ' + `${result[v].Product_Count} ถุงค่ะ` )
+                agent.add('โปรดสั่งใหม่อีกครั้งนะคะ')
                 plus2 = true
+                console.log(this.count)
+                deleteOrder(connection, this.count);
               }
             }
           }
@@ -260,7 +278,9 @@ app.post('/chatbot', express.json(), (req, res)=>{
                   }
                 }else{
                   agent.add('ขอโทษด้วยนะคะ ' + producttype1[b] + ' เหลืออยู่ ' + `${result[v].Product_Count} ถุงค่ะ` )
+                  agent.add('โปรดสั่งใหม่อีกครั้งนะคะ')
                   plus2 = true;
+                  deleteOrder(connection, this.count)
                 }
                           
               }
@@ -334,7 +354,9 @@ app.post('/chatbot', express.json(), (req, res)=>{
                       insertIntoDatabase2(connection, data);
                     }else{
                       agent.add('ขอโทษด้วยนะคะ ' + prodName[b] + ' เหลืออยู่ ' + `${result[v].Product_Count} ถุงค่ะ` )
+                      agent.add('โปรดสั่งใหม่อีกครั้งนะคะ')
                       plus2 = true;
+                      deleteOrder(connection, this.count);
                     }
                   }
                 }                
@@ -706,6 +728,35 @@ app.post('/chatbot', express.json(), (req, res)=>{
       })
     }
 
+    function DeliveryCancel(agent){
+      let idVerify = 0;
+      return connectToDatabase()
+      .then(connection => {
+        connection.query('SELECT * FROM ChatBotForSMEsDB.Order' , (error, results, fields) => {
+          for(let p = 0; p < results.length;p++){
+            if(req.body.originalDetectIntentRequest.payload.data.sender.id == results[p].Order_SenderID && results[p].Order_Date == undefined){
+              idVerify = results[p].id;
+            }
+          }                                      
+        });
+
+        connection.query('SELECT * FROM ChatBotForSMEsDB.Order_detail' , (error, results, fields) => {
+          for(let p = 0; p < results.length;p++){
+            if( idVerify == results[p].fk_order_id){
+              deleteOrderDetail(connection, results[p].idOrder_detail)
+            }
+          }                                      
+        });
+
+        return queryOrderDatabase(connection)
+        .then(result => { 
+        agent.add('ยกเลิกออเดอร์แล้วค่ะ');
+        deleteOrder(connection, idVerify)
+          connection.end();                                     
+        });
+      })
+    }
+
 
     function Payment(agent){ // ส่งสลิปจ่ายเงินก่อน
       let idVerify = 0;
@@ -800,7 +851,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
           if(result[a].Order_DeliveryType == 'Flash Express' && idVerify == result[a].id){
             timeCount = parseInt(result[a].Order_Check);
             timeCount += 3600000
-            if (new Date().getTime() < timeCount){
+            if (new Date().getTime() <= timeCount){
               console.log(any + " " + addressConvert + " " + phoneNumber ) 
               data = {
                 id : idVerify,
@@ -818,8 +869,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
           }else if(result[a].Order_DeliveryType == 'Kerry' && idVerify == result[a].id){
             timeCount = parseInt(result[a].Order_Check);
             timeCount += 3600000
-            agent.add(timeCount)
-            if (new Date().getTime() < timeCount){
+            if (new Date().getTime() <= timeCount){
               console.log(any + " " + addressConvert + " " + phoneNumber )   
               data = {
                 id : idVerify,
@@ -837,7 +887,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
           }else if(result[a].Order_DeliveryType == 'Flash Express (COD)' && idVerify == result[a].id){
             timeCount = parseInt(result[a].Order_Check);
             timeCount += 3600000
-            if (new Date().getTime() < timeCount){
+            if (new Date().getTime() <= timeCount){
             console.log(any + " " + addressConvert + " " + phoneNumber )  
             data = {
               id : idVerify,
@@ -857,7 +907,7 @@ app.post('/chatbot', express.json(), (req, res)=>{
           }else if(result[a].Order_DeliveryType == 'Kerry (COD)' && idVerify == result[a].id){
             timeCount = parseInt(result[a].Order_Check);
             timeCount += 3600000
-            if (new Date().getTime() < timeCount){
+            if (new Date().getTime() <= timeCount){
               console.log(any + " " + addressConvert + " " + phoneNumber )
               data = {
                 id : idVerify,
@@ -913,8 +963,83 @@ app.post('/chatbot', express.json(), (req, res)=>{
         })
     }
 
+    function AddressCancel(agent){
+      return connectToDatabase()
+      .then(connection => {
+
+      })
+    }
+
     function myTrim(x) {
       return x.replace(',');
+    }
+
+    function OrderCancel(agent){
+      let idVerify = 0;
+      let status = '';
+      let item = [];
+      let qty = [];
+      return connectToDatabase()
+      .then(connection => {
+      connection.query('SELECT * FROM ChatBotForSMEsDB.Order' , (error, results, fields) => {
+        for(let p = 0; p < results.length;p++){
+          if(req.body.originalDetectIntentRequest.payload.data.sender.id == results[p].Order_SenderID && results[p].Order_Payment != null ){
+            idVerify = results[p].id;
+          }
+        }
+        
+        for(let b = 0; b < results.length;b++){
+            if(results[b].Order_Tracking == 'ยังไม่มีพัสดุ' && idVerify == results[b].id){
+              console.log(idVerify == results[b].id)
+              status = 'ยกเลิก'
+                data = {
+                  id : idVerify,
+                  Order_Status : 'ยกเลิกโดยลูกค้า(ยังไม่คืนเงิน)',
+                  Order_Tracking : 'ยกเลิกโดยลูกค้า(ยังไม่คืนเงิน)'
+                }
+                updateOrTotal(connection, data)
+                agent.add('แอดมินทำการยกเลิกสินค้าแล้วนะคะ เดี๋ยวแอดมินโอนเงินกลับนะคะ')
+            }else if(results[b].Order_Tracking != 'ยังไม่มีพัสดุ' && idVerify == results[b].id){
+              status = 'ไม่ยกเลิก'
+              agent.add('ขอโทษด้วยนะคะ สินค้าได้ถูกจัดส่งแล้วค่ะ')
+            }
+          }
+          })         
+      connection.query('SELECT * FROM ChatBotForSMEsDB.Order_detail' , (error, results, fields) => {
+        for(let p = 0; p < results.length;p++){
+          if(status == 'ยกเลิก' && idVerify == results[p].fk_order_id){
+              item.push(results[p].fk_product_id)
+              qty.push(results[p].od_qty)
+          }
+        }                            
+      })
+      return queryDatabase(connection)
+        .then(result => {
+          let newQty = 0;
+          console.log(status)
+          console.log(item)
+          console.log(qty)  
+          let temp = 0;
+          for(let n = 0; n < result.length;n++){
+            for(let p = 0; p < result.length;p++){
+              if(status == 'ยกเลิก' && result[p].idProduct == item[n]){
+                temp = result[p].Product_Count + qty[n];
+                console.log(temp)
+                  data = {
+                    idProduct : item[n],
+                    Product_Count : temp
+                  }
+                  cutStock(connection, data)
+              }
+            }
+          }   
+          connection.end();
+        })      
+    })
+    }
+
+    function PaymentCancel(agent){
+
     }
 
     function callAdmin (){
@@ -949,5 +1074,9 @@ app.post('/chatbot', express.json(), (req, res)=>{
     intentMap.set('Address', GetAddress)
     intentMap.set('Address - custom', AddressPayment)
     intentMap.set('เรียกแอดมิน', callAdmin)
+    intentMap.set('DeliveryChoose - cancel', DeliveryCancel)
+    intentMap.set('Address - cancel', AddressCancel)
+    intentMap.set('Payment - custom - cancel', PaymentCancel)
+    intentMap.set('cancelOrder', OrderCancel)
     agent.handleRequest(intentMap);
 });
