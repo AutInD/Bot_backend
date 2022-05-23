@@ -963,12 +963,6 @@ app.post('/chatbot', express.json(), (req, res)=>{
         })
     }
 
-    function AddressCancel(agent){
-      return connectToDatabase()
-      .then(connection => {
-
-      })
-    }
 
     function myTrim(x) {
       return x.replace(',');
@@ -1038,9 +1032,6 @@ app.post('/chatbot', express.json(), (req, res)=>{
     })
     }
 
-    function PaymentCancel(agent){
-
-    }
 
     function callAdmin (){
       const admin = [
@@ -1075,8 +1066,6 @@ app.post('/chatbot', express.json(), (req, res)=>{
     intentMap.set('Address - custom', AddressPayment)
     intentMap.set('เรียกแอดมิน', callAdmin)
     intentMap.set('DeliveryChoose - cancel', DeliveryCancel)
-    intentMap.set('Address - cancel', AddressCancel)
-    intentMap.set('Payment - custom - cancel', PaymentCancel)
     intentMap.set('cancelOrder', OrderCancel)
     agent.handleRequest(intentMap);
 });
